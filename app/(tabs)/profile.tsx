@@ -4,7 +4,6 @@ import BadgeCard from '../../components/BadgeCard';
 import { sampleUser, sampleBadges, sampleLists, sampleReviews } from '../../data/sampleProfileData';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-
 export default function ProfileScreen() {
   const { name, avatar, totalVisits, reviewsWritten, badgesEarned, joinDate, location } = sampleUser;
   const [showAllBadgesPrompt, setShowAllBadgesPrompt] = useState(false);
@@ -13,7 +12,6 @@ export default function ProfileScreen() {
   const totalBadges = sampleBadges.length;
 
   const handleShareOnFacebook = () => {
-    // Logic for sharing on Facebook
     console.log('Shared on Facebook');
   };
 
@@ -54,7 +52,7 @@ export default function ProfileScreen() {
             {earnedBadges.length} of {totalBadges} earned
           </Text>
           <TouchableOpacity onPress={() => setShowAllBadgesPrompt(true)}>
-            <Text style={styles.seeAllText}>See all  &gt;</Text>
+            <Text style={styles.seeAllText}>See all</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.badgesContainer}>
@@ -70,8 +68,8 @@ export default function ProfileScreen() {
           ))}
         </View>
         <TouchableOpacity style={styles.facebookButton} onPress={handleShareOnFacebook}>
-          <Text style={styles.facebookButtonText}> 
-            <Icon name="facebook-f" size={14} color="#1c1e21" />   Share on Facebook
+          <Text style={styles.facebookButtonText}>
+            <Icon name="facebook-f" size={14} color="#333" />      Share on Facebook
           </Text>
         </TouchableOpacity>
       </View>
@@ -225,12 +223,12 @@ const styles = StyleSheet.create({
   },
   facebookButton: {
     alignSelf: 'flex-end',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#e9ecef',
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 5,
-    borderWidth: 0.5,
-    borderColor: '#ccc',
+    borderWidth: .5,
+    borderColor: '#ced4da',
   },
   facebookButtonText: {
     color: '#000',
