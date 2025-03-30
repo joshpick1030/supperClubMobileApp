@@ -1,9 +1,21 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { sampleUser, sampleBadges, sampleLists } from '../../data/sampleProfileData';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image, Modal } from 'react-native';
+import BadgeCard from '../../components/BadgeCard';
+import { sampleUser, sampleBadges, sampleLists, sampleReviews } from '../../data/sampleProfileData';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
 
 export default function ProfileScreen() {
-  const { name, avatar, totalVisits, reviewsWritten, badgesEarned } = sampleUser;
+  const { name, avatar, totalVisits, reviewsWritten, badgesEarned, joinDate, location } = sampleUser;
+  const [showAllBadgesPrompt, setShowAllBadgesPrompt] = useState(false);
+
+  const earnedBadges = sampleBadges.filter((badge) => badge.earned);
+  const totalBadges = sampleBadges.length;
+
+  const handleShareOnFacebook = () => {
+    // Logic for sharing on Facebook
+    console.log('Shared on Facebook');
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -11,6 +23,8 @@ export default function ProfileScreen() {
       <View style={styles.header}>
         <Image source={{ uri: avatar }} style={styles.avatar} />
         <Text style={styles.name}>{name}</Text>
+        <Text style={styles.joinDate}>Joined {joinDate}</Text>
+        <Text style={styles.location}>{location}</Text>
         <TouchableOpacity style={styles.editButton}>
           <Text style={styles.editButtonText}>Edit Profile</Text>
         </TouchableOpacity>
@@ -34,15 +48,75 @@ export default function ProfileScreen() {
 
       {/* Badges Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Badges</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {sampleBadges.map((badge) => (
-            <View key={badge.id} style={styles.badge}>
-              <Image source={{ uri: badge.image }} style={styles.badgeImage} />
-              <Text style={styles.badgeName}>{badge.name}</Text>
-            </View>
+        <View style={styles.badgesHeader}>
+          <Text style={styles.sectionTitle}>Your Badges</Text>
+          <Text style={styles.badgeStatus}>
+            {earnedBadges.length} of {totalBadges} earned
+          </Text>
+          <TouchableOpacity onPress={() => setShowAllBadgesPrompt(true)}>
+            <Text style={styles.seeAllText}>See all  &gt;</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.badgesContainer}>
+          {sampleBadges.slice(0, 3).map((badge) => (
+            <BadgeCard
+              key={badge.id}
+              name={badge.name}
+              image={badge.image}
+              current={badge.current}
+              required={badge.required}
+              earned={badge.earned}
+            />
           ))}
-        </ScrollView>
+        </View>
+        <TouchableOpacity style={styles.facebookButton} onPress={handleShareOnFacebook}>
+          <Text style={styles.facebookButtonText}> 
+            <Icon name="facebook-f" size={14} color="#1c1e21" />   Share on Facebook
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* "See All" Prompt */}
+      <Modal visible={showAllBadgesPrompt} animationType="slide" transparent>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Your Badges</Text>
+            <View style={styles.badgesContainer}>
+              {sampleBadges.map((badge) => (
+                <BadgeCard
+                  key={badge.id}
+                  name={badge.name}
+                  image={badge.image}
+                  current={badge.current}
+                  required={badge.required}
+                  earned={badge.earned}
+                />
+              ))}
+            </View>
+            <TouchableOpacity onPress={() => setShowAllBadgesPrompt(false)}>
+              <Text style={styles.closeText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Reviews Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Your Reviews</Text>
+        {sampleReviews.length > 0 ? (
+          sampleReviews.map((review) => (
+            <View key={review.id} style={styles.reviewItem}>
+              <Text style={styles.reviewClub}>{review.club}</Text>
+              <Text style={styles.reviewText}>{review.text}</Text>
+              <Text style={styles.reviewDate}>{review.date}</Text>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.emptyText}>You haven't written any reviews yet.</Text>
+        )}
+        <TouchableOpacity style={styles.addButton}>
+          <Text style={styles.addButtonText}>Add a Review</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Lists Section */}
@@ -87,6 +161,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 5,
   },
+  joinDate: {
+    fontSize: 14,
+    color: '#6c757d',
+    marginBottom: 5,
+  },
+  location: {
+    fontSize: 14,
+    color: '#6c757d',
+    marginBottom: 10,
+  },
   editButton: {
     backgroundColor: '#007bff',
     paddingVertical: 5,
@@ -117,24 +201,84 @@ const styles = StyleSheet.create({
   section: {
     padding: 20,
   },
+  badgesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 10,
   },
-  badge: {
+  badgeStatus: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  badgesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  seeAllText: {
+    fontSize: 14,
+    color: '#007bff',
+  },
+  facebookButton: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#f5f5f5',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+    borderWidth: 0.5,
+    borderColor: '#ccc',
+  },
+  facebookButtonText: {
+    color: '#000',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 15,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  badgeImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginBottom: 5,
+  modalContent: {
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
   },
-  badgeName: {
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  closeText: {
+    fontSize: 14,
+    color: '#ff0000',
+    marginTop: 20,
+  },
+  reviewItem: {
+    marginBottom: 10,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    borderRadius: 5,
+  },
+  reviewClub: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  reviewText: {
     fontSize: 12,
-    textAlign: 'center',
+    color: '#6c757d',
+    marginVertical: 5,
+  },
+  reviewDate: {
+    fontSize: 10,
+    color: '#adb5bd',
   },
   listItem: {
     flexDirection: 'row',
@@ -159,8 +303,9 @@ const styles = StyleSheet.create({
   addButton: {
     marginTop: 10,
     backgroundColor: '#007bff',
-    paddingVertical: 10,
-    alignItems: 'center',
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    alignSelf: 'center',
     borderRadius: 5,
   },
   addButtonText: {
