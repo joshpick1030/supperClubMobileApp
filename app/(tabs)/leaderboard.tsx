@@ -4,13 +4,9 @@ import {
   StyleSheet, FlatList, Image, SafeAreaView
 } from 'react-native';
 import HeaderBar from '@/components/HeaderBar';
-import { BarChart, Grid } from 'react-native-svg-charts';
-import * as scale from 'd3-scale';
-import { G, Text as SVGText, Image as SVGImage, Defs, ClipPath, Circle } from 'react-native-svg';
-
+import { BarChart } from 'react-native-chart-kit';
 
 const screenWidth = Dimensions.get('window').width;
-const barWidth = screenWidth - 32;
 
 const mockData = {
   overall: [
@@ -38,8 +34,6 @@ const mockData = {
 export default function LeaderboardScreen() {
   const [selectedTab, setSelectedTab] = useState<'overall' | 'state' | 'city'>('overall');
   const data = mockData[selectedTab];
-  const topThree = data.slice(0, 3);
-  const barData = topThree.map(user => user.visits);
 
   const renderItem = ({ item, index }: any) => {
     const isCurrent = item.currentUser;
@@ -59,45 +53,14 @@ export default function LeaderboardScreen() {
     );
   };
 
-  const Labels = ({ x, y, bandwidth }: any) => (
-    <>
-      <Defs>
-        {topThree.map((_, i) => (
-          <ClipPath id={`clip${i}`} key={`clip${i}`}>
-            <Circle cx="16" cy="16" r="16" />
-          </ClipPath>
-        ))}
-      </Defs>
-  
-      {topThree.map((user, index) => (
-        <G key={index}>
-          <SVGImage
-            x={x(index) + bandwidth / 2 - 16}
-            y={y(barData[index]) - 64}
-            width={32}
-            height={32}
-            preserveAspectRatio="xMidYMid slice"
-            xlinkHref={user.avatar} // ✅ Use xlinkHref instead of href
-            // clipPath={`url(#clip${index})`}
-          />
-          <SVGText
-            x={x(index) + bandwidth / 2}
-            y={y(barData[index]) - 12}
-            fontSize="12"
-            fill="#111827"
-            fontWeight="600"
-            alignmentBaseline="middle"
-            textAnchor="middle"
-          >
-            {`${user.visits} Clubs`}
-          </SVGText>
-        </G>
-      ))}
-    </>
-  );
-  
-  
-
+  const chartData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+    datasets: [
+      {
+        data: [50, 10, 40, 95, 85],
+      },
+    ],
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
@@ -125,18 +88,23 @@ export default function LeaderboardScreen() {
 
         {/* Bar Chart */}
         <BarChart
-          style={styles.chart}
-          data={barData}
-          svg={{ fill: '#C2410C', rx: 8 }}
-          spacingInner={0.6}
-          gridMin={0}
-          yAccessor={({ item }: { item: object }) => item}
-          contentInset={{ top: 80, bottom: 20 }}
-          numberOfTicks={5}
-        >
-          <Grid direction={Grid.Direction.HORIZONTAL} />
-          <Labels />
-        </BarChart>
+          data={chartData}
+          width={screenWidth - 32} // Adjust width as needed
+          height={220}
+          yAxisLabel="$"
+          chartConfig={{
+            backgroundColor: '#e26a00',
+            backgroundGradientFrom: '#fb8c00',
+            backgroundGradientTo: '#ffa726',
+            decimalPlaces: 2,
+            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+          }}
+          style={{
+            marginVertical: 8,
+            borderRadius: 16,
+          }}
+        />
 
         {/* Leaderboard List */}
         <Text style={styles.listTitle}>{selectedTab.charAt(0).toUpperCase() + selectedTab.slice(1)} Leaderboard</Text>
@@ -193,12 +161,6 @@ const styles = StyleSheet.create({
   activeTabText: {
     fontWeight: '600',
     color: '#000',
-  },
-  chart: {
-    height: 240,
-    marginBottom: 24,
-    width: Dimensions.get('window').width - 200,
-    alignSelf: 'center',
   },
   listTitle: {
     fontSize: 16,
