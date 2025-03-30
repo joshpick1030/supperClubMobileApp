@@ -17,35 +17,42 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Profile Header */}
-      <View style={styles.header}>
-        <Image source={{ uri: avatar }} style={styles.avatar} />
-        <Text style={styles.name}>{name}</Text>
-        <Text style={styles.joinDate}>Joined {joinDate}</Text>
-        <Text style={styles.location}>{location}</Text>
-        <TouchableOpacity style={styles.editButton}>
-          <Text style={styles.editButtonText}>Edit Profile</Text>
-        </TouchableOpacity>
+      {/* Profile Section */}
+      <View style={styles.card}>
+        <View style={styles.header}>
+          <Image source={{ uri: avatar }} style={styles.avatar} />
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.joinDate}>Joined {joinDate}</Text>
+          <Text style={styles.location}>{location}</Text>
+        </View>
       </View>
 
-      {/* User Statistics */}
-      <View style={styles.statsContainer}>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{totalVisits}</Text>
-          <Text style={styles.statLabel}>Clubs Visited</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{reviewsWritten}</Text>
-          <Text style={styles.statLabel}>Reviews Written</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{badgesEarned}</Text>
-          <Text style={styles.statLabel}>Badges Earned</Text>
+      {/* Statistics Section */}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Statistics</Text>
+        <View style={styles.statsContainer}>
+          {/* Clubs Visited */}
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{totalVisits}</Text>
+            <Text style={styles.statLabel}>Clubs Visited</Text>
+          </View>
+
+          {/* Reviews Written */}
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{reviewsWritten}</Text>
+            <Text style={styles.statLabel}>Reviews Written</Text>
+          </View>
+
+          {/* Badges Earned */}
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{badgesEarned}</Text>
+            <Text style={styles.statLabel}>Badges Earned</Text>
+          </View>
         </View>
       </View>
 
       {/* Badges Section */}
-      <View style={styles.section}>
+      <View style={styles.card}>
         <View style={styles.badgesHeader}>
           <Text style={styles.sectionTitle}>Your Badges</Text>
           <Text style={styles.badgeStatus}>
@@ -69,7 +76,7 @@ export default function ProfileScreen() {
         </View>
         <TouchableOpacity style={styles.facebookButton} onPress={handleShareOnFacebook}>
           <Text style={styles.facebookButtonText}>
-            <Icon name="facebook-f" size={14} color="#333" />      Share on Facebook
+            <Icon name="facebook-f" size={14} color="#333" /> Share on Facebook
           </Text>
         </TouchableOpacity>
       </View>
@@ -99,8 +106,11 @@ export default function ProfileScreen() {
       </Modal>
 
       {/* Reviews Section */}
-      <View style={styles.section}>
+      <View style={styles.card}>
         <Text style={styles.sectionTitle}>Your Reviews</Text>
+        <TouchableOpacity style={styles.addButton}>
+          <Text style={styles.addButtonText}>Add a Review</Text>
+        </TouchableOpacity>
         {sampleReviews.length > 0 ? (
           sampleReviews.map((review) => (
             <View key={review.id} style={styles.reviewItem}>
@@ -112,13 +122,11 @@ export default function ProfileScreen() {
         ) : (
           <Text style={styles.emptyText}>You haven't written any reviews yet.</Text>
         )}
-        <TouchableOpacity style={styles.addButton}>
-          <Text style={styles.addButtonText}>Add a Review</Text>
-        </TouchableOpacity>
+        
       </View>
 
       {/* Lists Section */}
-      <View style={styles.section}>
+      <View style={styles.card}>
         <Text style={styles.sectionTitle}>Your Lists</Text>
         {sampleLists.length > 0 ? (
           sampleLists.map((list) => (
@@ -141,12 +149,18 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F5EDE4', // Skin-colored background
+    padding: 16,
+  },
+  card: {
+    backgroundColor: '#FFFFFF', // White card background
+    borderRadius: 10,
+    padding: 20,
+    marginBottom: 16,
+    elevation: 2,
   },
   header: {
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#f8f9fa',
   },
   avatar: {
     width: 100,
@@ -181,23 +195,26 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 20,
-    backgroundColor: '#f1f3f5',
+    justifyContent: 'space-between',
   },
-  stat: {
+  statCard: {
+    flex: 1,
     alignItems: 'center',
+    backgroundColor: '#F9FAFB', // Light gray background for individual cards
+    borderRadius: 10,
+    paddingVertical: 20,
+    marginHorizontal: 5,
+    elevation: 1,
   },
   statValue: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#1F2937', // Dark text color
   },
   statLabel: {
     fontSize: 12,
-    color: '#6c757d',
-  },
-  section: {
-    padding: 20,
+    color: '#6B7280', // Muted text color
+    marginTop: 5,
   },
   badgesHeader: {
     flexDirection: 'row',
@@ -208,6 +225,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
+    marginBottom: 10,
   },
   badgeStatus: {
     fontSize: 14,
@@ -227,36 +245,14 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 5,
-    borderWidth: .5,
+    borderWidth: 0.5,
     borderColor: '#ced4da',
+    marginTop: 10,
   },
   facebookButtonText: {
     color: '#000',
     fontSize: 14,
     fontWeight: 'bold',
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    width: '90%',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-    alignItems: 'center',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  closeText: {
-    fontSize: 14,
-    color: '#ff0000',
-    marginTop: 20,
   },
   reviewItem: {
     marginBottom: 10,
@@ -278,6 +274,28 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#adb5bd',
   },
+  emptyText: {
+    fontSize: 14,
+    color: '#6c757d',
+    textAlign: 'center',
+    marginVertical: 10,
+  },
+  addButton: {
+    marginTop: 10,
+    backgroundColor: '#eee',
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 5,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 15,
+    marginBottom: 10,
+    borderWidth: .1,
+  },
+  addButtonText: {
+    fontWeight: 'bold',
+    color: '#000',
+    fontSize: 14,
+  },
   listItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -291,23 +309,5 @@ const styles = StyleSheet.create({
   listCount: {
     fontSize: 12,
     color: '#6c757d',
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#6c757d',
-    textAlign: 'center',
-    marginVertical: 10,
-  },
-  addButton: {
-    marginTop: 10,
-    backgroundColor: '#007bff',
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    alignSelf: 'center',
-    borderRadius: 5,
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 14,
   },
 });
