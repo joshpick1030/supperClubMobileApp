@@ -72,7 +72,7 @@ export default function LeaderboardScreen() {
         </Text>
 
         {/* Tabs */}
-        <View style={styles.tabs}>
+        <View style={styles.card}>
           {['overall', 'state', 'city'].map(tab => (
             <TouchableOpacity
               key={tab}

@@ -56,3 +56,21 @@ export const sampleReviews = [
     date: '2023-09-15',
   },
 ];
+
+export const sampleStatuses = [
+  {
+    id: '1',
+    title: 'Supper Club Virtuoso',
+    description: '#3 Overall Leaderboard',
+  },
+  {
+    id: '2',
+    title: 'Midwest Explorer',
+    description: '#5 in Midwest Leaderboard',
+  },
+  {
+    id: '3',
+    title: 'Foodie Adventurer',
+    description: '#10 in City Leaderboard',
+  },
+];
