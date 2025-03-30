@@ -233,7 +233,9 @@ const styles = StyleSheet.create({
   },
   badgesContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
+    marginBottom: 20,
   },
   seeAllText: {
     fontSize: 14,
@@ -309,5 +311,37 @@ const styles = StyleSheet.create({
   listCount: {
     fontSize: 12,
     color: '#6c757d',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+  },
+  modalContent: {
+    width: '90%',
+    backgroundColor: '#FFFFFF', // White background for the modal
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+    elevation: 5, // Shadow for the modal
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1F2937', // Dark text color
+    marginBottom: 20,
+  },
+  closeText: {
+    fontSize: 14,
+    color: '#007bff', // Blue color for the close button
+    marginTop: 20,
+    fontWeight: 'bold',
+  },
+  seeAllBadgesText: {
+    fontSize: 14,
+    color: '#007bff', // Blue color for the "See All Badges" button
+    marginTop: 20,
+    fontWeight: 'bold',
   },
 });
