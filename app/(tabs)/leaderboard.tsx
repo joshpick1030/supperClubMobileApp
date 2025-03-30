@@ -92,6 +92,7 @@ export default function LeaderboardScreen() {
           width={screenWidth - 32} // Adjust width as needed
           height={220}
           yAxisLabel="$"
+          yAxisSuffix="" // Add this property to fix the error
           chartConfig={{
             backgroundColor: '#e26a00',
             backgroundGradientFrom: '#fb8c00',

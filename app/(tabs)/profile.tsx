@@ -156,6 +156,9 @@ export default function ProfileScreen() {
         {/* Your Reviews Section */}
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Your Reviews</Text>
+          <TouchableOpacity style={styles.addButton}>
+            <Text style={styles.addButtonText}>Add a Review</Text>
+          </TouchableOpacity>
           {sampleReviews.length > 0 ? (
             sampleReviews.map((review) => (
               <View key={review.id} style={styles.reviewItem}>
@@ -167,9 +170,7 @@ export default function ProfileScreen() {
           ) : (
             <Text style={styles.emptyText}>You haven't written any reviews yet.</Text>
           )}
-          <TouchableOpacity style={styles.addButton}>
-            <Text style={styles.addButtonText}>Add a Review</Text>
-          </TouchableOpacity>
+          
         </View>
 
         {/* Your Lists Section */}
@@ -388,14 +389,20 @@ const styles = StyleSheet.create({
   },
   addButton: {
     marginTop: 10,
-    backgroundColor: '#007bff',
+    backgroundColor: '#eee',
     paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 5,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 20,
+    borderWidth: 0.1,
+    marginBottom: 10,
+    marginLeft: 2,
+    borderRadius: 10,
   },
   addButtonText: {
-    color: '#fff',
+    color: '#000',
+    fontWeight: 'bold',
     fontSize: 14,
+
   },
   listItem: {
     flexDirection: 'row',
