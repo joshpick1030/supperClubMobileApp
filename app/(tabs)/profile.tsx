@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image, Modal, SafeAreaView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image, ImageBackground, Modal, SafeAreaView } from 'react-native';
 import BadgeCard from '../../components/BadgeCard';
 import { sampleUser, sampleBadges, sampleStatuses, sampleLists, sampleReviews } from '../../data/sampleProfileData';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import HeaderBar from '@/components/HeaderBar';
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'; // Use Expo Vector Icons
 
 export default function ProfileScreen() {
   const { name, avatar, totalVisits, reviewsWritten, badgesEarned, joinDate, location } = sampleUser;
@@ -19,50 +20,67 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-      <HeaderBar />
-      <ScrollView style={styles.container}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#F5EDE4' }}>
+      <HeaderBar />    
+      <ScrollView>
         {/* Profile Section */}
         <View style={styles.card}>
+          <ImageBackground
+            source={{ uri: 'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07' }}
+            style={styles.headerBackground}
+            resizeMode="cover"
+          >
+            <View style={styles.overlay} />
+          </ImageBackground>
           <View style={styles.header}>
             <Image source={{ uri: avatar }} style={styles.avatar} />
             <Text style={styles.name}>{name}</Text>
-            <Text style={styles.joinDate}>Joined {joinDate}</Text>
-            <Text style={styles.location}>{location}</Text>
+            <View style={{flexDirection: 'row', marginHorizontal: 10, marginTop: 5}}>
+              <FontAwesome name="calendar" size={16} color="#6B7280" style={styles.icon} />
+              <Text style={styles.joinDate}>Joined {joinDate}</Text>
+              <FontAwesome name="map-marker" size={16} color="#6B7280" style={styles.icon} />
+              <Text style={styles.location}>{location}</Text>
+            </View>
           </View>
         </View>
-
+        
         {/* Statistics Section */}
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Statistics</Text>
           <View style={styles.statsContainer}>
             <View style={styles.statCard}>
+              <FontAwesome5 name="compass" size={20} color="#cc6600" />
               <Text style={styles.statValue}>{totalVisits}</Text>
               <Text style={styles.statLabel}>Clubs Visited</Text>
             </View>
             <View style={styles.statCard}>
+              <FontAwesome5 name="star" size={20} color="#cc6600" /> 
               <Text style={styles.statValue}>{reviewsWritten}</Text>
               <Text style={styles.statLabel}>Reviews Written</Text>
             </View>
             <View style={styles.statCard}>
+              <FontAwesome5 name="map-marker-alt" size={20} color="#cc6600" />
               <Text style={styles.statValue}>{badgesEarned}</Text>
               <Text style={styles.statLabel}>Badges Earned</Text>
             </View>
           </View>
         </View>
 
-        <ScrollView style={styles.container}>
         {/* Your Status Card */}
         <View style={styles.card}>
           <View style={styles.statusHeader}>
-            <Text style={styles.sectionTitle}>Your Status</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <FontAwesome5 name="award" size={25} color="#cc6600" style={styles.icon} />
+              <Text style={styles.sectionTitle}>Your Status</Text>
+            </View>
             <TouchableOpacity onPress={() => setShowAllStatusesPrompt(true)}>
-              <Text style={styles.seeAllText}>See all</Text>
+              <Text style={styles.seeAllText}>See all  &gt;</Text>
             </TouchableOpacity>
           </View>
           {currentStatus && (
             <View style={styles.statusContent}>
-              <View style={styles.borderedCard}>
+              <View style={{alignItems: 'center' }}>
+                <FontAwesome5 name="award" size={25} color="#cc6600" style={styles.icon} />
                 <Text style={styles.statusTitle}>{currentStatus.title}</Text>
                 <Text style={styles.statusSubtitle}>{currentStatus.description}</Text>
                 <TouchableOpacity style={styles.leaderboardButton}>
@@ -97,7 +115,6 @@ export default function ProfileScreen() {
             </View>
           </View>
         </Modal>
-      </ScrollView>
 
         {/* Your Badges Section */}
         <View style={styles.card}>
@@ -107,7 +124,7 @@ export default function ProfileScreen() {
               {earnedBadges.length} of {totalBadges} earned
             </Text>
             <TouchableOpacity onPress={() => setShowAllBadgesPrompt(true)}>
-              <Text style={styles.seeAllText}>See all</Text>
+              <Text style={styles.seeAllText}>See all  &gt;</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.badgesContainer}>
@@ -196,29 +213,30 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5EDE4', // Skin-colored background
-    padding: 16,
-  },
+  
   card: {
     backgroundColor: '#FFFFFF', // White card background
     borderRadius: 10,
     padding: 20,
     marginBottom: 16,
     elevation: 2,
+    marginLeft: 20,
+    marginRight: 20,
   },
   header: {
     alignItems: 'center',
+    marginTop: -80,
   },
   avatar: {
     width: 100,
     height: 100,
     borderRadius: 50,
     marginBottom: 10,
+    borderColor: '#fff',
+    borderWidth: 5,
   },
   name: {
-    fontSize: 20,
+    fontSize: 23,
     fontWeight: 'bold',
     marginBottom: 5,
   },
@@ -256,19 +274,23 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 26,
     fontWeight: 'bold',
     marginBottom: 10,
+    marginLeft: 10,
+    marginTop: 10,
+    alignSelf: 'flex-start',
   },
   statusHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
+    marginHorizontal: 10,
   },
   seeAllText: {
-    fontSize: 14,
-    color: '#007bff',
+    fontSize: 15,
+    color: '#cc6600',
   },
   statusContent: {
     marginBottom: 10,
@@ -433,5 +455,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6c757d',
     marginVertical: 5,
+  },
+  icon: {
+    marginRight: 8,
+    marginLeft: 15,
+    marginTop: 3,
+  },
+  headerBackground: {
+    height: 150, // Adjust height as needed
+    width: '100%',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Optional dark overlay for better text contrast
   },
 });
