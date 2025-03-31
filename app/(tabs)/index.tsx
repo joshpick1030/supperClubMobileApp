@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   Dimensions,
   StyleSheet,
+  ImageBackground,
   Pressable,
 } from 'react-native';
 import { Link } from 'expo-router';
-import { FontAwesome } from '@expo/vector-icons';
 import HeaderBar from '@/components/HeaderBar';
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'; // Use Expo Vector Icons
+import { sampleUser, sampleBadges, sampleStatuses, sampleLists, sampleReviews } from '../../data/sampleProfileData';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -34,116 +36,145 @@ function CustomHeader() {
 }
 
 export default function Home() {
+
+  const { name, avatar, totalVisits, reviewsWritten, badgesEarned, joinDate, location } = sampleUser;
   const handleFacebookShare = () => {
     // Future: Integrate Share API or deep link
     console.log('Sharing on Facebook...');
   };
 
   return (
+
     <View style={styles.screen}>
       <HeaderBar />
-      <ScrollView style={styles.container}>
+      <ImageBackground
+          source={{ uri: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2400&q=80' }}
+          style={styles.background}
+          resizeMode="cover"
+        >
+          <View style={styles.overlay} />
+          <View style={styles.headercontent}>
+            <Text style={styles.title}>Welcome to Supper Club</Text>
+            <Text style={styles.subtitle}>Discover the best dining experiences</Text>
+          </View>
+
+        <ScrollView >
 
         {/* Hero Section */}
-        <View style={styles.heroSection}>
-          <Image
-            source={{ uri: 'https://source.unsplash.com/1600x400/?restaurant,interior' }}
-            style={styles.heroImage}
-            resizeMode="cover"
-          />
-          <View style={styles.heroTextContainer}>
-            <Text style={styles.welcomeText}>Welcome back,</Text>
-            <Text style={styles.userName}>Jennifer Smith</Text>
+          <View style={styles.headercontent}>
+            <Text style={styles.tagline}>
+              Savor the Midwest, One Supper Club at a Time
+            </Text>
           </View>
-        </View>
+          {/* CTA Buttons */}
+          <View style={styles.ctaContainer}>
 
-        <Text style={styles.tagline}>
-          Savor the Midwest, One Supper Club at a Time
-        </Text>
+            <Link href="/map" asChild>
+              <TouchableOpacity style={styles.discoverButton}>
+                <FontAwesome5 name="compass" size={20} color="#000" />
+                <Text style={styles.discoverButtonText}>Discover</Text>
+              </TouchableOpacity>
+            </Link>
+            <Link href="/leaderboard" asChild>
+              <TouchableOpacity style={styles.leaderboardButton}>
+                <FontAwesome5 name="trophy" size={15} color="#000" style={styles.icon} />
+                <Text style={styles.leaderboardButtonText}>Leaderboard</Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
 
-        {/* CTA Buttons */}
-        <View style={styles.ctaContainer}>
-          <Link href="/map" asChild>
-            <TouchableOpacity style={styles.discoverButton}>
-              <Text style={styles.discoverButtonText}>Discover</Text>
-            </TouchableOpacity>
-          </Link>
-          <Link href="/leaderboard" asChild>
-            <TouchableOpacity style={styles.leaderboardButton}>
-              <Text style={styles.leaderboardButtonText}>Leaderboard</Text>
-            </TouchableOpacity>
-          </Link>
-        </View>
-
-        {/* Statistics */}
-        <View style={styles.statsContainer}>
-          <StatBox label="Clubs Visited" value="2" />
-          <StatBox label="Reviews Written" value="1" />
-          <StatBox label="WI Visits" value="2" />
-        </View>
-
-        {/* Nearby Clubs */}
-        <Text style={styles.sectionTitle}>Nearby Clubs</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.nearbyClubsContainer}>
-          {[
-            { name: 'The Supper Club', city: 'Wausau', miles: 26 },
-            { name: 'Northwoods Dining', city: 'Minocqua', miles: 56 },
-            { name: 'Lakeside Supper', city: 'Madison', miles: 65 },
-            { name: 'Dutch Mill', city: 'Kenosha', miles: 97 },
-            { name: 'The Pines Resort', city: 'Mercer', miles: 75 },
-          ].map((club, i) => (
-            <View key={i} style={styles.clubCard}>
-              <View style={styles.clubImagePlaceholder} />
-              <View style={styles.clubInfo}>
-                <Text style={styles.clubName}>{club.name}</Text>
-                <Text style={styles.clubDetails}>{club.city} • {club.miles} miles away</Text>
+          {/* Statistics Section */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Statistics</Text>
+            <View style={styles.statsContainer}>
+              <View style={styles.statCard}>
+                <FontAwesome5 name="compass" size={20} color="#cc6600" />
+                <Text style={styles.statValue}>{totalVisits}</Text>
+                <Text style={styles.statLabel}>Clubs Visited</Text>
+              </View>
+              <View style={styles.statCard}>
+                <FontAwesome5 name="star" size={20} color="#cc6600" /> 
+                <Text style={styles.statValue}>{reviewsWritten}</Text>
+                <Text style={styles.statLabel}>Reviews Written</Text>
+              </View>
+              <View style={styles.statCard}>
+                <FontAwesome5 name="map-marker-alt" size={20} color="#cc6600" />
+                <Text style={styles.statValue}>{badgesEarned}</Text>
+                <Text style={styles.statLabel}>Badges Earned</Text>
               </View>
             </View>
-          ))}
-        </ScrollView>
+          </View>
 
-        {/* Status & Journey Section */}
-        <Text style={styles.sectionTitle}>Badges</Text>
-        <View style={styles.badgeBox}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.badgesContainer}>
-              <BadgeCard label="Supper Club Newbie" progress="1/1" achieved />
-              <BadgeCard label="Experienced Foodie" progress="1/5" />
-              <BadgeCard label="Midwest Master" progress="1/10" />
+          {/* Nearby Clubs */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Nearby Clubs</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.nearbyClubsContainer}>
+              {[
+                { name: 'The Supper Club', city: 'Wausau', miles: 26 },
+                { name: 'Northwoods Dining', city: 'Minocqua', miles: 56 },
+                { name: 'Lakeside Supper', city: 'Madison', miles: 65 },
+                { name: 'Dutch Mill', city: 'Kenosha', miles: 97 },
+                { name: 'The Pines Resort', city: 'Mercer', miles: 75 },
+              ].map((club, i) => (
+                <View key={i} style={styles.clubCard}>
+                  <View style={styles.clubImagePlaceholder} />
+                  <View style={styles.clubInfo}>
+                    <Text style={styles.clubName}>{club.name}</Text>
+                    <Text style={styles.clubDetails}>{club.city} • {club.miles} miles away</Text>
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Status & Journey Section */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Badges</Text>
+            <View style={styles.badgeBox}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.badgesContainer}>
+                  <BadgeCard label="Supper Club Newbie" progress="1/1" achieved />
+                  <BadgeCard label="Experienced Foodie" progress="1/5" />
+                  <BadgeCard label="Midwest Master" progress="1/10" />
+                </View>
+              </ScrollView>
+              <TouchableOpacity style={styles.shareButton} onPress={handleFacebookShare}>
+                <FontAwesome name="facebook" size={18} color="#1877F2" style={{ marginRight: 6 }} />
+                <Text style={styles.shareButtonText}>Share on Facebook</Text>
+              </TouchableOpacity>
             </View>
-          </ScrollView>
-          <TouchableOpacity style={styles.shareButton} onPress={handleFacebookShare}>
-            <FontAwesome name="facebook" size={18} color="#1877F2" style={{ marginRight: 6 }} />
-            <Text style={styles.shareButtonText}>Share on Facebook</Text>
-          </TouchableOpacity>
-        </View>
+          </View>
 
-        <Text style={styles.sectionTitle}>Your Supper Club Journey</Text>
-        <View style={styles.journeyBox}>
-          <Text style={styles.journeyText}>Interactive map of your supper club visits coming soon!</Text>
-          <TouchableOpacity style={styles.exploreButton}>
-            <Text style={styles.exploreButtonText}>Explore Supper Clubs</Text>
-          </TouchableOpacity>
-        </View>
+          <Text style={styles.sectionTitle}>Your Supper Club Journey</Text>
+          <View style={styles.journeyBox}>
+            <Text style={styles.journeyText}>Interactive map of your supper club visits coming soon!</Text>
+            <TouchableOpacity style={styles.exploreButton}>
+              <Text style={styles.exploreButtonText}>Explore Supper Clubs</Text>
+            </TouchableOpacity>
+          </View>
 
-        {/* About Supper Clubs */}
-        <Text style={styles.sectionTitle}>About Supper Clubs</Text>
-        <View style={styles.aboutBox}>
-          <Text style={styles.aboutHeading}>What is a Supper Club?</Text>
-          <Text style={styles.aboutText}>
-            Supper clubs are traditional dining establishments found primarily in the Upper Midwestern states.
-            They offer a relaxed, homey atmosphere with classic American cuisine like prime rib, fish fry, and cocktails.
-          </Text>
-          <Text style={styles.aboutHeading}>Supper Club Etiquette</Text>
-          <Text style={styles.aboutText}>
-            Order a brandy old-fashioned before dinner, take your time, and don't rush the experience. Many clubs have a relaxed dress code, but some may request business casual attire.
-          </Text>
-          <Pressable style={styles.learnMoreButton}>
-            <Text style={styles.learnMoreText}>Learn More</Text>
-          </Pressable>
-        </View>
+          {/* About Supper Clubs */}
+          <Text style={styles.sectionTitle}>About Supper Clubs</Text>
+          <View style={styles.aboutBox}>
+            <Text style={styles.aboutHeading}>What is a Supper Club?</Text>
+            <Text style={styles.aboutText}>
+              Supper clubs are traditional dining establishments found primarily in the Upper Midwestern states.
+              They offer a relaxed, homey atmosphere with classic American cuisine like prime rib, fish fry, and cocktails.
+            </Text>
+            <Text style={styles.aboutHeading}>Supper Club Etiquette</Text>
+            <Text style={styles.aboutText}>
+              Order a brandy old-fashioned before dinner, take your time, and don't rush the experience. Many clubs have a relaxed dress code, but some may request business casual attire.
+            </Text>
+            <Pressable style={styles.learnMoreButton}>
+              <Text style={styles.learnMoreText}>Learn More</Text>
+            </Pressable>
+          </View>
+        
+        
       </ScrollView>
+      </ImageBackground>
     </View>
+    
   );
 }
 
@@ -214,9 +245,16 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   heroTextContainer: {
-    position: 'absolute',
-    top: 24,
-    left: 16,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Semi-transparent white
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 8,
+    margin: 16,
+    fontWeight: 'bold',
+    color: '#1F2937', // Navy-like color
+    textAlign: 'center',
+    backdropFilter: 'blur(10px)', // Optional blur effect
   },
   welcomeText: {
     color: '#FFFFFF',
@@ -230,8 +268,8 @@ const styles = StyleSheet.create({
   },
   tagline: {
     textAlign: 'center',
-    fontSize: 16,
-    color: '#4A4A4A',
+    fontSize: 21,
+    color: '#1D3557',
     marginBottom: 16,
   },
   ctaContainer: {
@@ -243,23 +281,34 @@ const styles = StyleSheet.create({
     backgroundColor: '#F59E0B',
     paddingVertical: 8,
     paddingHorizontal: 20,
-    borderRadius: 9999,
+    borderRadius: 10,
     marginRight: 8,
+    width: 170,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   discoverButtonText: {
-    color: '#FFFFFF',
+    color: '#000',
     fontWeight: '600',
+    marginLeft: 8,
   },
   leaderboardButton: {
     borderColor: '#F59E0B',
+    backgroundColor: '#F59E0B',
     borderWidth: 1,
     paddingVertical: 8,
     paddingHorizontal: 20,
-    borderRadius: 9999,
+    borderRadius: 10,
+    width: 170,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   leaderboardButtonText: {
-    color: '#F59E0B',
+    color: '#000',
     fontWeight: '600',
+    marginLeft: 8,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -463,5 +512,60 @@ const styles = StyleSheet.create({
     color: '#1F2937',
     fontSize: 14,
     fontWeight: '500',
+  },
+  background: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Optional overlay for better text contrast
+  },
+  content: {
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    padding: 20,
+    backdropFilter: 'blur(10px)', // Optional blur effect
+  },
+  headercontent: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Semi-transparent white
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 8,
+    margin: 16,
+    fontWeight: 'bold',
+    color: '#1F2937', // Navy-like color
+    textAlign: 'center',
+    backdropFilter: 'blur(10px)', // Optional blur effect
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#FFFFFF',
+  },
+  card: {
+    backgroundColor: '#FFFFFF', // White card background
+    borderRadius: 10,
+    padding: 20,
+    marginBottom: 16,
+    elevation: 2,
+    marginLeft: 20,
+    marginRight: 20,
+  },
+  statCard: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB', // Light gray background for individual cards
+    borderRadius: 10,
+    paddingVertical: 20,
+    marginHorizontal: 5,
+    elevation: 1,
   },
 });

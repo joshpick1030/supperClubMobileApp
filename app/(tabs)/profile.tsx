@@ -5,9 +5,11 @@ import { sampleUser, sampleBadges, sampleStatuses, sampleLists, sampleReviews } 
 import Icon from 'react-native-vector-icons/FontAwesome';
 import HeaderBar from '@/components/HeaderBar';
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'; // Use Expo Vector Icons
+import { useNavigation } from '@react-navigation/native';
 
 export default function ProfileScreen() {
   const { name, avatar, totalVisits, reviewsWritten, badgesEarned, joinDate, location } = sampleUser;
+  const navigation = useNavigation();
   const [showAllBadgesPrompt, setShowAllBadgesPrompt] = useState(false);
   const [showAllStatusesPrompt, setShowAllStatusesPrompt] = useState(false);
 
@@ -17,6 +19,10 @@ export default function ProfileScreen() {
 
   const handleShareOnFacebook = () => {
     console.log('Shared on Facebook');
+  };
+
+  const handleLeaderboardNavigation = () => {
+    navigation.navigate('leaderboard');
   };
 
   return (
@@ -84,7 +90,7 @@ export default function ProfileScreen() {
                 <Text style={styles.statusTitle}>{currentStatus.title}</Text>
                 <Text style={styles.statusSubtitle}>{currentStatus.description}</Text>
                 <TouchableOpacity style={styles.leaderboardButton}>
-                  <Text style={styles.leaderboardButtonText}>leaderboard</Text>
+                  <Text style={styles.leaderboardButtonText} onPress={handleLeaderboardNavigation} >leaderboard</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -274,11 +280,12 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   sectionTitle: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
     marginLeft: 10,
     marginTop: 10,
+    fontFamily: 'serif',
     alignSelf: 'flex-start',
   },
   statusHeader: {
@@ -290,6 +297,7 @@ const styles = StyleSheet.create({
   },
   seeAllText: {
     fontSize: 15,
+    fontFamily: 'serif',
     color: '#cc6600',
   },
   statusContent: {
@@ -341,6 +349,7 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 14,
     fontWeight: 'bold',
+    fontFamily: 'serif',
   },
   modalContainer: {
     flex: 1,
@@ -367,6 +376,7 @@ const styles = StyleSheet.create({
     color: '#007bff', // Blue color for the close button
     marginTop: 20,
     fontWeight: 'bold',
+    fontFamily: 'serif',
   },
   badgesHeader: {
     flexDirection: 'row',
@@ -398,6 +408,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6c757d',
     marginVertical: 5,
+    fontFamily: 'serif',
   },
   reviewDate: {
     fontSize: 10,
@@ -408,6 +419,7 @@ const styles = StyleSheet.create({
     color: '#6c757d',
     textAlign: 'center',
     marginVertical: 10,
+    fontFamily: 'serif',
   },
   addButton: {
     marginTop: 10,
@@ -424,7 +436,7 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: 'bold',
     fontSize: 14,
-
+    fontFamily: 'serif',
   },
   listItem: {
     flexDirection: 'row',
@@ -435,6 +447,7 @@ const styles = StyleSheet.create({
   },
   listName: {
     fontSize: 14,
+    fontFamily: 'serif',
   },
   listCount: {
     fontSize: 12,
@@ -450,11 +463,13 @@ const styles = StyleSheet.create({
   statusItemTitle: {
     fontSize: 14,
     fontWeight: 'bold',
+    fontFamily: 'serif',
   },
   statusItemDescription: {
     fontSize: 12,
     color: '#6c757d',
     marginVertical: 5,
+    fontFamily: 'serif',
   },
   icon: {
     marginRight: 8,
