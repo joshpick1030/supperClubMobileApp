@@ -188,17 +188,9 @@ export default function MapScreen() {
                 latitude: club.geometry.location.lat,
                 longitude: club.geometry.location.lng,
               }}
+              onPress={() => setSelectedClub(club)}
               pinColor={isVisited(club) ? 'green' : 'red'} // Green for visited, red for non-visited
             >
-              <Callout>
-                <View style={styles.callout}>
-                  <Text style={styles.clubName}>{club.name}</Text>
-                  <Text style={styles.clubDetails}>{club.vicinity}</Text>
-                  <Text style={styles.clubStatus}>
-                    {isVisited(club) ? 'Visited' : 'Not Visited'}
-                  </Text>
-                </View>
-              </Callout>
             </Marker>
           ))}
         </MapView>
