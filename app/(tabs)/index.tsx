@@ -605,4 +605,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     elevation: 1,
   },
+  icon: {
+    marginRight: 8,
+    marginLeft: 15,
+    marginTop: 3,
+  },
 });
