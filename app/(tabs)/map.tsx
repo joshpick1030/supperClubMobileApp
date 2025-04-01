@@ -1,10 +1,11 @@
 // app/map.tsx
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Modal } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Modal, Image, ScrollView } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import axios from 'axios';
 import * as Location from 'expo-location';
+import { FontAwesome, AntDesign } from '@expo/vector-icons';
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyB5iaOi8llySykAv5NUqMjx7u5mU4LU0qs';
 
@@ -26,8 +27,17 @@ const visitedPlaces = [
     city: 'New York',
     state: 'NY',
     rating: 4.5,
+    price: '$50-100',
+    address: '123 Main St, New York, NY',
+    images: [
+      'https://via.placeholder.com/300x200',
+      'https://via.placeholder.com/300x200',
+    ],
+    reviews: [
+      { id: '1', text: 'Amazing food and great atmosphere!', rating: 5 },
+      { id: '2', text: 'Highly recommend the steak!', rating: 4.5 },
+    ],
     visited: true,
-    description: 'A cozy supper club offering the best prime rib in New York.',
   },
   {
     id: '2',
@@ -37,8 +47,16 @@ const visitedPlaces = [
     city: 'New York',
     state: 'NY',
     rating: 4.8,
+    price: '$100-150',
+    address: '456 Broadway, New York, NY',
+    images: [
+      'https://via.placeholder.com/300x200',
+      'https://via.placeholder.com/300x200',
+    ],
+    reviews: [
+      { id: '1', text: 'Upscale dining experience with great seafood!', rating: 5 },
+    ],
     visited: true,
-    description: 'An upscale dining experience with a focus on seafood.',
   },
 ];
 
@@ -109,11 +127,6 @@ export default function MapScreen() {
 
   const renderClubItem = ({ item }: { item: any }) => (
     <View style={styles.clubCard}>
-      {/* Rating in the top-right corner */}
-      <View style={styles.ratingContainer}>
-        <Text style={styles.ratingText}>{item.rating || 'N/A'}/5 ★</Text>
-      </View>
-
       <Text style={styles.clubName}>{item.name}</Text>
       <Text style={styles.clubDetails}>
         {item.vicinity || `${item.city}, ${item.state}`}
@@ -131,6 +144,13 @@ export default function MapScreen() {
       </TouchableOpacity>
     </View>
   );
+
+  const addToVisited = (club: any) => {
+    if (!visitedPlaces.find((visited) => visited.id === club.id)) {
+      visitedPlaces.push({ ...club, visited: true });
+    }
+    setSelectedClub(null); // Close the popup
+  };
 
   if (!location && errorMsg) {
     return (
@@ -203,18 +223,53 @@ export default function MapScreen() {
           onRequestClose={() => setSelectedClub(null)}
         >
           <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
+            <ScrollView style={styles.modalContent}>
+              {/* Header */}
+              <View style={styles.modalHeader}>
+                <TouchableOpacity onPress={() => setSelectedClub(null)}>
+                  <AntDesign name="arrowleft" size={24} color="black" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => addToVisited(selectedClub)}>
+                  <AntDesign name="plus" size={24} color="black" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Club Name */}
               <Text style={styles.modalTitle}>{selectedClub.name}</Text>
+
+              {/* Images */}
+              <ScrollView horizontal style={styles.imageCarousel}>
+                {selectedClub.images?.map((image: string, index: number) => (
+                  <Image
+                    key={index}
+                    source={{ uri: image }}
+                    style={styles.modalImage}
+                  />
+                ))}
+              </ScrollView>
+
+              {/* Address, Price, and Rating */}
               <Text style={styles.modalDetails}>
-                {selectedClub.description || 'No description available.'}
+                Address: {selectedClub.address || 'Not Available'}
               </Text>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setSelectedClub(null)}
-              >
-                <Text style={styles.closeButtonText}>Close</Text>
-              </TouchableOpacity>
-            </View>
+              <Text style={styles.modalDetails}>
+                Price: {selectedClub.price || 'Not Available'}
+              </Text>
+              <Text style={styles.modalDetails}>
+                Rating: {selectedClub.rating || 'N/A'}/5
+              </Text>
+
+              {/* Reviews */}
+              <Text style={styles.modalSectionTitle}>Reviews</Text>
+              {selectedClub.reviews?.map((review: any) => (
+                <View key={review.id} style={styles.reviewCard}>
+                  <Text style={styles.reviewText}>{review.text}</Text>
+                  <Text style={styles.reviewRating}>
+                    Rating: {review.rating}/5
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
           </View>
         </Modal>
       )}
@@ -262,21 +317,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 10,
     elevation: 2,
-    position: 'relative',
-  },
-  ratingContainer: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: '#F59E0B',
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  ratingText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: 'bold',
   },
   clubName: {
     fontSize: 16,
@@ -305,35 +345,51 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'white',
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
     padding: 20,
-    borderRadius: 8,
-    width: '80%',
-    alignItems: 'center',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 20,
+  },
+  imageCarousel: {
+    marginBottom: 20,
+  },
+  modalImage: {
+    width: 300,
+    height: 200,
+    marginRight: 10,
+    borderRadius: 8,
   },
   modalDetails: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 20,
-    textAlign: 'center',
+    fontSize: 16,
+    marginBottom: 10,
   },
-  closeButton: {
-    backgroundColor: '#F59E0B',
+  modalSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  reviewCard: {
+    backgroundColor: '#F3F4F6',
     padding: 10,
-    borderRadius: 4,
+    borderRadius: 8,
+    marginBottom: 10,
   },
-  closeButtonText: {
-    color: '#FFFFFF',
+  reviewText: {
+    fontSize: 14,
+    marginBottom: 5,
+  },
+  reviewRating: {
     fontSize: 14,
     fontWeight: 'bold',
   },
