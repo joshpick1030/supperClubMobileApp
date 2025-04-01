@@ -1,7 +1,7 @@
 // app/map.tsx
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Modal } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import axios from 'axios';
 import * as Location from 'expo-location';
@@ -25,7 +25,9 @@ const visitedPlaces = [
     longitude: -73.935242,
     city: 'New York',
     state: 'NY',
+    rating: 4.5,
     visited: true,
+    description: 'A cozy supper club offering the best prime rib in New York.',
   },
   {
     id: '2',
@@ -34,7 +36,9 @@ const visitedPlaces = [
     longitude: -74.005974,
     city: 'New York',
     state: 'NY',
+    rating: 4.8,
     visited: true,
+    description: 'An upscale dining experience with a focus on seafood.',
   },
 ];
 
@@ -44,6 +48,7 @@ export default function MapScreen() {
   const [nearbyClubs, setNearbyClubs] = useState<any[]>([]);
   const [region, setRegion] = useState(defaultRegion);
   const [searchQuery, setSearchQuery] = useState(''); // State for search query
+  const [selectedClub, setSelectedClub] = useState<any | null>(null); // State for selected club details
 
   useEffect(() => {
     (async () => {
@@ -102,20 +107,28 @@ export default function MapScreen() {
     );
   };
 
-  // Filter clubs based on the search query
-  const filteredClubs = nearbyClubs.filter((club) =>
-    club.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   const renderClubItem = ({ item }: { item: any }) => (
     <View style={styles.clubCard}>
+      {/* Rating in the top-right corner */}
+      <View style={styles.ratingContainer}>
+        <Text style={styles.ratingText}>{item.rating || 'N/A'}/5 ★</Text>
+      </View>
+
       <Text style={styles.clubName}>{item.name}</Text>
       <Text style={styles.clubDetails}>
-        {item.vicinity || 'Address not available'}
+        {item.vicinity || `${item.city}, ${item.state}`}
       </Text>
       <Text style={styles.clubStatus}>
         {isVisited(item) ? 'Visited' : 'Not Visited'}
       </Text>
+
+      {/* Details Button */}
+      <TouchableOpacity
+        style={styles.detailsButton}
+        onPress={() => setSelectedClub(item)}
+      >
+        <Text style={styles.detailsButtonText}>Details</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -148,7 +161,7 @@ export default function MapScreen() {
           showsUserLocation
         >
           {/* Mark nearby clubs */}
-          {filteredClubs.map((club) => (
+          {nearbyClubs.map((club) => (
             <Marker
               key={club.place_id}
               coordinate={{
@@ -174,12 +187,37 @@ export default function MapScreen() {
       {/* List Section */}
       <View style={styles.listContainer}>
         <FlatList
-          data={filteredClubs}
+          data={nearbyClubs}
           keyExtractor={(item) => item.place_id}
           renderItem={renderClubItem}
           contentContainerStyle={styles.listContent}
         />
       </View>
+
+      {/* Club Details Modal */}
+      {selectedClub && (
+        <Modal
+          transparent
+          animationType="slide"
+          visible={!!selectedClub}
+          onRequestClose={() => setSelectedClub(null)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>{selectedClub.name}</Text>
+              <Text style={styles.modalDetails}>
+                {selectedClub.description || 'No description available.'}
+              </Text>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setSelectedClub(null)}
+              >
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 }
@@ -224,6 +262,21 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 10,
     elevation: 2,
+    position: 'relative',
+  },
+  ratingContainer: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#F59E0B',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  ratingText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   clubName: {
     fontSize: 16,
@@ -237,5 +290,51 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#10B981',
+  },
+  detailsButton: {
+    marginTop: 10,
+    backgroundColor: '#F59E0B',
+    padding: 8,
+    borderRadius: 4,
+    alignItems: 'center',
+  },
+  detailsButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 8,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalDetails: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  closeButton: {
+    backgroundColor: '#F59E0B',
+    padding: 10,
+    borderRadius: 4,
+  },
+  closeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
