@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Link } from 'expo-router';
 import HeaderBar from '@/components/HeaderBar';
+import BadgeCard from '../../components/BadgeCard';
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'; // Use Expo Vector Icons
 import { sampleUser, sampleBadges, sampleStatuses, sampleLists, sampleReviews } from '../../data/sampleProfileData';
 
@@ -43,6 +44,34 @@ export default function Home() {
     console.log('Sharing on Facebook...');
   };
 
+  const nearbyClubs = [
+    {
+      name: 'Norwood Pines Supper Club',
+      city: 'Minocqua',
+      miles: 56,
+      image: 'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fHJlc3RhdXJhbnR8ZW58MHx8MHx8fDA%3D%3D&auto=format&fit=crop&w=500&q=60',
+    },
+    {
+      name: 'Sardine',
+      city: 'Madison',
+      miles: 65,
+      image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cmVzdGF1cmFudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60',
+    },
+    {
+      name: 'Dutch Mill',
+      city: 'Kenosha',
+      miles: 97,
+      image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cmVzdGF1cmFudCUyMGludGVyaW9yfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
+    },
+    {
+      name: 'The Pines',
+      city: 'Mercer',
+      miles: 75,
+      image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8cmVzdGF1cmFudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60',
+    },
+  ];
+  
+
   return (
 
     <View style={styles.screen}>
@@ -54,7 +83,7 @@ export default function Home() {
         >
           <View style={styles.overlay} />
           <View style={styles.headercontent}>
-            <Text style={styles.title}>Welcome to Supper Club</Text>
+            <Text style={styles.title}>Welcome to Supper Club </Text>
             <Text style={styles.subtitle}>Discover the best dining experiences</Text>
           </View>
 
@@ -85,7 +114,7 @@ export default function Home() {
 
           {/* Statistics Section */}
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Statistics</Text>
+            
             <View style={styles.statsContainer}>
               <View style={styles.statCard}>
                 <FontAwesome5 name="compass" size={20} color="#cc6600" />
@@ -109,18 +138,14 @@ export default function Home() {
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Nearby Clubs</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.nearbyClubsContainer}>
-              {[
-                { name: 'The Supper Club', city: 'Wausau', miles: 26 },
-                { name: 'Northwoods Dining', city: 'Minocqua', miles: 56 },
-                { name: 'Lakeside Supper', city: 'Madison', miles: 65 },
-                { name: 'Dutch Mill', city: 'Kenosha', miles: 97 },
-                { name: 'The Pines Resort', city: 'Mercer', miles: 75 },
-              ].map((club, i) => (
+              {nearbyClubs.map((club, i) => (
                 <View key={i} style={styles.clubCard}>
-                  <View style={styles.clubImagePlaceholder} />
+                  <Image source={{ uri: club.image }} style={styles.clubImage} />
                   <View style={styles.clubInfo}>
                     <Text style={styles.clubName}>{club.name}</Text>
-                    <Text style={styles.clubDetails}>{club.city} • {club.miles} miles away</Text>
+                    <Text style={styles.clubDetails}>
+                      {club.city} • {club.miles} miles away
+                    </Text>
                   </View>
                 </View>
               ))}
@@ -131,13 +156,18 @@ export default function Home() {
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Badges</Text>
             <View style={styles.badgeBox}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View style={styles.badgesContainer}>
-                  <BadgeCard label="Supper Club Newbie" progress="1/1" achieved />
-                  <BadgeCard label="Experienced Foodie" progress="1/5" />
-                  <BadgeCard label="Midwest Master" progress="1/10" />
-                </View>
-              </ScrollView>
+              <View style={styles.badgesContainer}>
+                {sampleBadges.slice(0, 3).map((badge) => (
+                  <BadgeCard
+                    key={badge.id}
+                    name={badge.name}
+                    image={badge.image}
+                    current={badge.current}
+                    required={badge.required}
+                    earned={badge.earned}
+                  />
+                ))}
+              </View>
               <TouchableOpacity style={styles.shareButton} onPress={handleFacebookShare}>
                 <FontAwesome name="facebook" size={18} color="#1877F2" style={{ marginRight: 6 }} />
                 <Text style={styles.shareButtonText}>Share on Facebook</Text>
@@ -145,8 +175,11 @@ export default function Home() {
             </View>
           </View>
 
-          <Text style={styles.sectionTitle}>Your Supper Club Journey</Text>
           <View style={styles.journeyBox}>
+            <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 12}}>
+              <FontAwesome5 name="map" size={20} color="#600" />
+              <Text style={styles.tagline}>Your Supper Club Journey</Text>
+            </View>
             <Text style={styles.journeyText}>Interactive map of your supper club visits coming soon!</Text>
             <TouchableOpacity style={styles.exploreButton}>
               <Text style={styles.exploreButtonText}>Explore Supper Clubs</Text>
@@ -154,8 +187,9 @@ export default function Home() {
           </View>
 
           {/* About Supper Clubs */}
-          <Text style={styles.sectionTitle}>About Supper Clubs</Text>
+         
           <View style={styles.aboutBox}>
+            <Text style={styles.sectionTitle}>About Supper Clubs</Text>
             <Text style={styles.aboutHeading}>What is a Supper Club?</Text>
             <Text style={styles.aboutText}>
               Supper clubs are traditional dining establishments found primarily in the Upper Midwestern states.
@@ -183,16 +217,6 @@ function StatBox({ label, value }: { label: string; value: string }) {
     <View style={styles.statBox}>
       <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
-
-function BadgeCard({ label, progress, achieved = false }: BadgeCardProps) {
-  return (
-    <View style={styles.badgeCard}>
-      <View style={[styles.badgeIcon, achieved ? styles.badgeAchieved : styles.badgePending]} />
-      <Text style={styles.badgeLabel}>{label}</Text>
-      <Text style={styles.badgeProgress}>{progress} visits</Text>
     </View>
   );
 }
@@ -270,7 +294,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 21,
     color: '#1D3557',
-    marginBottom: 16,
+    marginLeft: 8,
   },
   ctaContainer: {
     flexDirection: 'row',
@@ -337,8 +361,10 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1F2937',
+    color: '#000',
     marginBottom: 8,
+    alignSelf: 'flex-start',
+    paddingBottom: 8,
   },
   nearbyClubsContainer: {
     paddingBottom: 16,
@@ -367,6 +393,12 @@ const styles = StyleSheet.create({
   clubDetails: {
     fontSize: 12,
     color: '#6B7280',
+  },
+  clubImage: {
+    width: '100%',
+    height: 100,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
   },
   badgeBox: {
     backgroundColor: '#FFFFFF',
@@ -448,6 +480,8 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     elevation: 2,
     alignItems: 'center',
+    marginLeft: 20,
+    marginRight: 20,
   },
   journeyText: {
     fontSize: 14,
@@ -473,6 +507,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 48,
     elevation: 2,
+    marginLeft: 20,
+    marginRight: 20,
   },
   aboutHeading: {
     fontSize: 14,
@@ -539,6 +575,7 @@ const styles = StyleSheet.create({
     color: '#1F2937', // Navy-like color
     textAlign: 'center',
     backdropFilter: 'blur(10px)', // Optional blur effect
+    flexDirection: 'row',
   },
   title: {
     fontSize: 24,
