@@ -83,7 +83,9 @@ export default function MapScreen() {
   const [nearbyClubs, setNearbyClubs] = useState<any[]>([]);
   const [region, setRegion] = useState(defaultRegion);
   const [searchQuery, setSearchQuery] = useState(''); // State for search query
-  const [selectedClub, setSelectedClub] = useState<any | null>(null); // State for selected club details
+  const [selectedClubForPrompt, setSelectedClubForPrompt] = useState<any | null>(null);
+  const [selectedClubForModal, setSelectedClubForModal] = useState<any | null>(null);  
+  const [showPreviewPrompt, setShowPreviewPrompt] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -155,10 +157,11 @@ export default function MapScreen() {
       {/* Details Button */}
       <TouchableOpacity
         style={styles.detailsButton}
-        onPress={() => setSelectedClub(item)}
+        onPress={() => setSelectedClubForModal(item)}
       >
         <Text style={styles.detailsButtonText}>Details</Text>
       </TouchableOpacity>
+
     </View>
   );
 
@@ -166,7 +169,7 @@ export default function MapScreen() {
     if (!visitedPlaces.find((visited) => visited.id === club.id)) {
       visitedPlaces.push({ ...club, visited: true });
     }
-    setSelectedClub(null); // Close the popup
+    setSelectedClubForModal(null); // Close the popup
   };
 
   if (!location && errorMsg) {
@@ -205,12 +208,15 @@ export default function MapScreen() {
                 latitude: club.geometry.location.lat,
                 longitude: club.geometry.location.lng,
               }}
-              onPress={() => setSelectedClub(club)}
-              pinColor={isVisited(club) ? 'green' : 'red'} // Green for visited, red for non-visited
-            >
-            </Marker>
+              onPress={() => {
+                setSelectedClubForPrompt(club);
+                setShowPreviewPrompt(true);
+              }}              
+              pinColor={isVisited(club) ? 'green' : 'red'}
+            />
           ))}
         </MapView>
+        
       </View>
 
       {/* List Section */}
@@ -224,33 +230,33 @@ export default function MapScreen() {
       </View>
 
       {/* Club Details Modal */}
-      {selectedClub && (
+      {selectedClubForModal && (
         <Modal
           transparent
           animationType="slide"
-          visible={!!selectedClub}
-          onRequestClose={() => setSelectedClub(null)}
+          visible={!!selectedClubForModal}
+          onRequestClose={() => setSelectedClubForModal(null)}
         >
           <View style={styles.modalContainer}>
             <ScrollView style={styles.modalContent}>
         
               {/* Header Buttons */}
               <View style={styles.modalHeader}>
-                <TouchableOpacity onPress={() => setSelectedClub(null)}>
+                <TouchableOpacity onPress={() => setSelectedClubForModal(null)}>
                   <AntDesign name="arrowleft" size={24} color="black" />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => addToVisited(selectedClub)}>
+                <TouchableOpacity onPress={() => addToVisited(selectedClubForModal)}>
                   <AntDesign name="plus" size={24} color="black" />
                 </TouchableOpacity>
               </View>
         
               {/* Supper Club Name */}
-              <Text style={styles.modalTitle}>{selectedClub.name}</Text>
+              <Text style={styles.modalTitle}>{selectedClubForModal.name}</Text>
         
               {/* Image Preview */}
               <ScrollView horizontal style={styles.imageCarousel}>
-                {selectedClub.photos?.length
-                  ? selectedClub.photos.map((photo: any, index: number) => (
+                {selectedClubForModal .photos?.length
+                  ? selectedClubForModal .photos.map((photo: any, index: number) => (
                       <Image
                         key={index}
                         source={{
@@ -259,7 +265,7 @@ export default function MapScreen() {
                         style={styles.modalImage}
                       />
                     ))
-                  : selectedClub.images?.map((img: string, index: number) => (
+                  : selectedClubForModal .images?.map((img: string, index: number) => (
                       <Image key={index} source={{ uri: img }} style={styles.modalImage} />
                     ))}
               </ScrollView>
@@ -271,26 +277,26 @@ export default function MapScreen() {
                     key={index}
                     name="star"
                     size={20}
-                    color={index < Math.round(selectedClub.rating || 0) ? '#FACC15' : '#E5E7EB'}
+                    color={index < Math.round(selectedClubForModal .rating || 0) ? '#FACC15' : '#E5E7EB'}
                   />
                 ))}
-                <Text style={{ marginLeft: 8 }}>({selectedClub.rating || 'N/A'})</Text>
+                <Text style={{ marginLeft: 8 }}>({selectedClubForModal .rating || 'N/A'})</Text>
               </View>
         
               {/* Address & Price */}
               <Text style={styles.modalDetails}>
-                Address: {selectedClub.vicinity || selectedClub.address || 'Not Available'}
+                Address: {selectedClubForModal .vicinity || selectedClubForModal .address || 'Not Available'}
               </Text>
               <Text style={styles.modalDetails}>
-                Price: {getPriceRange(selectedClub.price_level)}
+                Price: {getPriceRange(selectedClubForModal .price_level)}
               </Text>
         
               {/* Club Location Mini Map */}
               <MapView
                 style={styles.detailMap}
                 initialRegion={{
-                  latitude: selectedClub.geometry?.location.lat || selectedClub.latitude,
-                  longitude: selectedClub.geometry?.location.lng || selectedClub.longitude,
+                  latitude: selectedClubForModal .geometry?.location.lat || selectedClubForModal .latitude,
+                  longitude: selectedClubForModal .geometry?.location.lng || selectedClubForModal .longitude,
                   latitudeDelta: 0.01,
                   longitudeDelta: 0.01,
                 }}
@@ -299,16 +305,16 @@ export default function MapScreen() {
               >
                 <Marker
                   coordinate={{
-                    latitude: selectedClub.geometry?.location.lat || selectedClub.latitude,
-                    longitude: selectedClub.geometry?.location.lng || selectedClub.longitude,
+                    latitude: selectedClubForModal .geometry?.location.lat || selectedClubForModal .latitude,
+                    longitude: selectedClubForModal .geometry?.location.lng || selectedClubForModal .longitude,
                   }}
                 />
               </MapView>
         
               {/* Reviews */}
               <Text style={styles.modalSectionTitle}>Reviews</Text>
-              {selectedClub.reviews?.length ? (
-                selectedClub.reviews.map((review: any) => (
+              {selectedClubForModal .reviews?.length ? (
+                selectedClubForModal .reviews.map((review: any) => (
                   <View key={review.id} style={styles.reviewCard}>
                     <Text style={styles.reviewText}>{review.text}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -330,6 +336,53 @@ export default function MapScreen() {
           </View>
         </Modal>
       )}
+      {showPreviewPrompt && selectedClubForPrompt && (
+        <View style={styles.promptOverlay}>
+          {/* Blurred Background (just dimming here) */}
+          <TouchableOpacity
+            style={styles.blurBackground}
+            activeOpacity={1}
+            onPress={() => {
+              setShowPreviewPrompt(false);
+              setSelectedClubForPrompt(null);
+            }}
+          />
+
+          {/* Prompt Card */}
+          <View style={styles.promptCard}>
+            <Text style={styles.promptTitle}>{selectedClubForPrompt.name}</Text>
+
+            {selectedClubForPrompt.photos?.[0] && (
+              <Image
+                source={{
+                  uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=100&photoreference=${selectedClubForPrompt.photos[0].photo_reference}&key=${GOOGLE_MAPS_API_KEY}`,
+                }}
+                style={styles.promptImage}
+              />
+            )}
+
+            <Text style={{ color: selectedClubForPrompt.opening_hours?.open_now ? 'green' : 'red' }}>
+              {selectedClubForPrompt.opening_hours?.open_now ? 'Open Now' : 'Closed'}
+            </Text>
+
+            <Text style={{ color: isVisited(selectedClubForPrompt) ? 'green' : 'gray' }}>
+              {isVisited(selectedClubForPrompt) ? 'Visited' : 'Not Visited'}
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => {
+                setShowPreviewPrompt(false);
+                setSelectedClubForModal(selectedClubForPrompt);
+              }}
+              style={styles.viewDetailsButton}
+            >
+              <Text style={{ color: 'white' }}>View Details</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+
     </View>
   );
 }
@@ -460,4 +513,56 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 20,
   },
+  promptCard: {
+    position: 'absolute',
+    bottom: 300,
+    width: '60%',
+    alignSelf: 'center',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 15,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  promptTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  promptImage: {
+    width: '100%',
+    height: 320,
+    borderRadius: 6,
+    marginBottom: 10,
+  },
+  viewDetailsButton: {
+    marginTop: 10,
+    backgroundColor: '#2563EB',
+    padding: 10,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  promptOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  
+  blurBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dims everything behind
+  },
+  
 });
