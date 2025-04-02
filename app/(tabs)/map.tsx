@@ -17,6 +17,23 @@ const defaultRegion = {
   longitudeDelta: 0.1,
 };
 
+const getPriceRange = (priceLevel: number) => {
+  switch (priceLevel) {
+    case 0:
+      return '$0';
+    case 1:
+      return '$1 - $10';
+    case 2:
+      return '$11 - $30';
+    case 3:
+      return '$31 - $60';
+    case 4:
+      return '$60+';
+    default:
+      return 'Not Available';
+  }
+};
+
 // Mock data for visited places in New York
 const visitedPlaces = [
   {
@@ -216,7 +233,8 @@ export default function MapScreen() {
         >
           <View style={styles.modalContainer}>
             <ScrollView style={styles.modalContent}>
-              {/* Header */}
+        
+              {/* Header Buttons */}
               <View style={styles.modalHeader}>
                 <TouchableOpacity onPress={() => setSelectedClub(null)}>
                   <AntDesign name="arrowleft" size={24} color="black" />
@@ -225,42 +243,89 @@ export default function MapScreen() {
                   <AntDesign name="plus" size={24} color="black" />
                 </TouchableOpacity>
               </View>
-
-              {/* Club Name */}
+        
+              {/* Supper Club Name */}
               <Text style={styles.modalTitle}>{selectedClub.name}</Text>
-
-              {/* Images */}
+        
+              {/* Image Preview */}
               <ScrollView horizontal style={styles.imageCarousel}>
-                {selectedClub.images?.map((image: string, index: number) => (
-                  <Image
+                {selectedClub.photos?.length
+                  ? selectedClub.photos.map((photo: any, index: number) => (
+                      <Image
+                        key={index}
+                        source={{
+                          uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photo.photo_reference}&key=${GOOGLE_MAPS_API_KEY}`,
+                        }}
+                        style={styles.modalImage}
+                      />
+                    ))
+                  : selectedClub.images?.map((img: string, index: number) => (
+                      <Image key={index} source={{ uri: img }} style={styles.modalImage} />
+                    ))}
+              </ScrollView>
+        
+              {/* Rating (Star Visuals) */}
+              <View style={styles.starContainer}>
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <FontAwesome
                     key={index}
-                    source={{ uri: image }}
-                    style={styles.modalImage}
+                    name="star"
+                    size={20}
+                    color={index < Math.round(selectedClub.rating || 0) ? '#FACC15' : '#E5E7EB'}
                   />
                 ))}
-              </ScrollView>
-
-              {/* Address, Price, and Rating */}
+                <Text style={{ marginLeft: 8 }}>({selectedClub.rating || 'N/A'})</Text>
+              </View>
+        
+              {/* Address & Price */}
               <Text style={styles.modalDetails}>
-                Address: {selectedClub.address || 'Not Available'}
+                Address: {selectedClub.vicinity || selectedClub.address || 'Not Available'}
               </Text>
               <Text style={styles.modalDetails}>
-                Price: {selectedClub.price || 'Not Available'}
+                Price: {getPriceRange(selectedClub.price_level)}
               </Text>
-              <Text style={styles.modalDetails}>
-                Rating: {selectedClub.rating || 'N/A'}/5
-              </Text>
-
+        
+              {/* Club Location Mini Map */}
+              <MapView
+                style={styles.detailMap}
+                initialRegion={{
+                  latitude: selectedClub.geometry?.location.lat || selectedClub.latitude,
+                  longitude: selectedClub.geometry?.location.lng || selectedClub.longitude,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }}
+                scrollEnabled={false}
+                zoomEnabled={false}
+              >
+                <Marker
+                  coordinate={{
+                    latitude: selectedClub.geometry?.location.lat || selectedClub.latitude,
+                    longitude: selectedClub.geometry?.location.lng || selectedClub.longitude,
+                  }}
+                />
+              </MapView>
+        
               {/* Reviews */}
               <Text style={styles.modalSectionTitle}>Reviews</Text>
-              {selectedClub.reviews?.map((review: any) => (
-                <View key={review.id} style={styles.reviewCard}>
-                  <Text style={styles.reviewText}>{review.text}</Text>
-                  <Text style={styles.reviewRating}>
-                    Rating: {review.rating}/5
-                  </Text>
-                </View>
-              ))}
+              {selectedClub.reviews?.length ? (
+                selectedClub.reviews.map((review: any) => (
+                  <View key={review.id} style={styles.reviewCard}>
+                    <Text style={styles.reviewText}>{review.text}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      {Array.from({ length: 5 }).map((_, idx) => (
+                        <FontAwesome
+                          key={idx}
+                          name="star"
+                          size={16}
+                          color={idx < Math.round(review.rating) ? '#FACC15' : '#E5E7EB'}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <Text>No reviews available.</Text>
+              )}
             </ScrollView>
           </View>
         </Modal>
@@ -384,5 +449,15 @@ const styles = StyleSheet.create({
   reviewRating: {
     fontSize: 14,
     fontWeight: 'bold',
+  },
+  starContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  detailMap: {
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 20,
   },
 });
