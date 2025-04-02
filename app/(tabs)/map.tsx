@@ -125,43 +125,35 @@ export default function MapScreen() {
   const [selectedClubForPrompt, setSelectedClubForPrompt] = useState<any | null>(null);
   const [selectedClubForModal, setSelectedClubForModal] = useState<any | null>(null);  
   const [showPreviewPrompt, setShowPreviewPrompt] = useState(false);
-  const [didSetFromParams, setDidSetFromParams] = useState(false);
-  const [regionReady, setRegionReady] = useState(false);
   const params = useLocalSearchParams();
 
   useEffect(() => {
-    if (didSetFromParams) return;
-  
     (async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
           setErrorMsg('Permission to access location was denied');
-          setRegionReady(true); // allow fallback to default NY
           return;
         }
-  
+
         const currentLocation = await Location.getCurrentPositionAsync({});
         setLocation(currentLocation);
-  
+
         if (currentLocation) {
-          const newRegion = {
+          setRegion({
             latitude: currentLocation.coords.latitude,
             longitude: currentLocation.coords.longitude,
             latitudeDelta: 0.05,
             longitudeDelta: 0.05,
-          };
-          setRegion(newRegion);
-          fetchNearbyClubs(newRegion.latitude, newRegion.longitude);
-          setRegionReady(true);
+          });
+          fetchNearbyClubs(currentLocation.coords.latitude, currentLocation.coords.longitude);
         }
       } catch (error) {
         console.error('Error fetching location:', error);
         setErrorMsg('Unable to fetch location.');
-        setRegionReady(true);
       }
     })();
-  }, [didSetFromParams]);
+  }, []);
 
   const { lat, lng } = params;
 
@@ -169,48 +161,15 @@ export default function MapScreen() {
     if (lat && lng) {
       const parsedLat = parseFloat(String(lat));
       const parsedLng = parseFloat(String(lng));
-  
-      const fromParams = {
+      setRegion({
         latitude: parsedLat,
         longitude: parsedLng,
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
-      };
-      setRegion(fromParams);
+      });
       fetchNearbyClubs(parsedLat, parsedLng);
-      setRegionReady(true);
-      return; // <--- Important: skip the location logic
     }
-
-    (async () => {
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          setErrorMsg('Permission to access location was denied');
-          // If no permission, set region to default or remain null
-          // and setRegionReady(true) so we don't keep loading
-          setRegionReady(true);
-          return;
-        }
-  
-        const currentLocation = await Location.getCurrentPositionAsync({});
-        if (currentLocation) {
-          const fromGPS = {
-            latitude: currentLocation.coords.latitude,
-            longitude: currentLocation.coords.longitude,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          };
-          setRegion(fromGPS);
-          fetchNearbyClubs(fromGPS.latitude, fromGPS.longitude);
-        }
-      } catch (error) {
-        setErrorMsg('Unable to fetch location');
-      } finally {
-        setRegionReady(true);
-      }
-    })();
-  }, [lat, lng]);
+  }, [lat, lng]); // Only rerun if actual lat/lng change  
 
   const getClubReviews = (club: any) => {
     const visitedMatch = visitedPlaces.find((v) => v.place_id === club.place_id);
@@ -320,33 +279,29 @@ export default function MapScreen() {
 
       {/* Map Section */}
       <View style={styles.mapContainer}>
-        {regionReady && region ?(
-          <MapView
-            style={styles.map}
-            region={region}
-            onRegionChangeComplete={(newRegion) => setRegion(newRegion)}
-            showsUserLocation
-          >
-            {nearbyClubs.map((club) => (
-              <Marker
-                key={club.place_id}
-                coordinate={{
-                  latitude: club.geometry.location.lat,
-                  longitude: club.geometry.location.lng,
-                }}
-                onPress={() => {
-                  setSelectedClubForPrompt(club);
-                  setShowPreviewPrompt(true);
-                }}
-                pinColor={isVisited(club) ? 'green' : 'red'}
-              />
-            ))}
-          </MapView>
-        ) : (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>Loading map...</Text>
-          </View>
-        )}
+        <MapView
+          style={styles.map}
+          region={region}
+          onRegionChangeComplete={(newRegion) => setRegion(newRegion)}
+          showsUserLocation
+        >
+          {/* Mark nearby clubs */}
+          {nearbyClubs.map((club) => (
+            <Marker
+              key={club.place_id}
+              coordinate={{
+                latitude: club.geometry.location.lat,
+                longitude: club.geometry.location.lng,
+              }}
+              onPress={() => {
+                setSelectedClubForPrompt(club);
+                setShowPreviewPrompt(true);
+              }}              
+              pinColor={isVisited(club) ? 'green' : 'red'}
+            />
+          ))}
+        </MapView>
+        
       </View>
 
       {/* List Section */}
