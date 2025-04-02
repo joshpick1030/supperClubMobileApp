@@ -6,6 +6,7 @@ import MapView, { Marker, Callout } from 'react-native-maps';
 import axios from 'axios';
 import * as Location from 'expo-location';
 import { FontAwesome, AntDesign } from '@expo/vector-icons';
+import { useLocalSearchParams } from 'expo-router';
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyB5iaOi8llySykAv5NUqMjx7u5mU4LU0qs';
 
@@ -92,6 +93,25 @@ const visitedPlaces = [
       { id: '1', text: "Live music and delicious cocktails!", rating: 5 },
     ],
     visited: true,
+  },
+  {
+    id: '4',
+    name: "Copper Club",
+    place_id: "ChIJvx8622AtDogRizuPzfuMBaw",
+    latitude: 41.8821835,
+    longitude: -87.62980709999999,
+    city: "Chicago",
+    state: "Illinois",
+    rating: 4.6,
+    price: "$10-30",
+    address: "V9W7+56 Chicago, Illinois",
+    images: [
+      'https://via.placeholder.com/300x200',
+    ],
+    reviews: [
+      { id: '1', text: "Live music and delicious cocktails!", rating: 5 },
+    ],
+    visited: true,
   }
 ];
 
@@ -105,34 +125,92 @@ export default function MapScreen() {
   const [selectedClubForPrompt, setSelectedClubForPrompt] = useState<any | null>(null);
   const [selectedClubForModal, setSelectedClubForModal] = useState<any | null>(null);  
   const [showPreviewPrompt, setShowPreviewPrompt] = useState(false);
+  const [didSetFromParams, setDidSetFromParams] = useState(false);
+  const [regionReady, setRegionReady] = useState(false);
+  const params = useLocalSearchParams();
 
   useEffect(() => {
+    if (didSetFromParams) return;
+  
     (async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
           setErrorMsg('Permission to access location was denied');
+          setRegionReady(true); // allow fallback to default NY
           return;
         }
-
+  
         const currentLocation = await Location.getCurrentPositionAsync({});
         setLocation(currentLocation);
-
+  
         if (currentLocation) {
-          setRegion({
+          const newRegion = {
             latitude: currentLocation.coords.latitude,
             longitude: currentLocation.coords.longitude,
             latitudeDelta: 0.05,
             longitudeDelta: 0.05,
-          });
-          fetchNearbyClubs(currentLocation.coords.latitude, currentLocation.coords.longitude);
+          };
+          setRegion(newRegion);
+          fetchNearbyClubs(newRegion.latitude, newRegion.longitude);
+          setRegionReady(true);
         }
       } catch (error) {
         console.error('Error fetching location:', error);
         setErrorMsg('Unable to fetch location.');
+        setRegionReady(true);
       }
     })();
-  }, []);
+  }, [didSetFromParams]);
+
+  const { lat, lng } = params;
+
+  useEffect(() => {
+    if (lat && lng) {
+      const parsedLat = parseFloat(String(lat));
+      const parsedLng = parseFloat(String(lng));
+  
+      const fromParams = {
+        latitude: parsedLat,
+        longitude: parsedLng,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      };
+      setRegion(fromParams);
+      fetchNearbyClubs(parsedLat, parsedLng);
+      setRegionReady(true);
+      return; // <--- Important: skip the location logic
+    }
+
+    (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setErrorMsg('Permission to access location was denied');
+          // If no permission, set region to default or remain null
+          // and setRegionReady(true) so we don't keep loading
+          setRegionReady(true);
+          return;
+        }
+  
+        const currentLocation = await Location.getCurrentPositionAsync({});
+        if (currentLocation) {
+          const fromGPS = {
+            latitude: currentLocation.coords.latitude,
+            longitude: currentLocation.coords.longitude,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          };
+          setRegion(fromGPS);
+          fetchNearbyClubs(fromGPS.latitude, fromGPS.longitude);
+        }
+      } catch (error) {
+        setErrorMsg('Unable to fetch location');
+      } finally {
+        setRegionReady(true);
+      }
+    })();
+  }, [lat, lng]);
 
   const getClubReviews = (club: any) => {
     const visitedMatch = visitedPlaces.find((v) => v.place_id === club.place_id);
@@ -242,29 +320,33 @@ export default function MapScreen() {
 
       {/* Map Section */}
       <View style={styles.mapContainer}>
-        <MapView
-          style={styles.map}
-          region={region}
-          onRegionChangeComplete={(newRegion) => setRegion(newRegion)}
-          showsUserLocation
-        >
-          {/* Mark nearby clubs */}
-          {nearbyClubs.map((club) => (
-            <Marker
-              key={club.place_id}
-              coordinate={{
-                latitude: club.geometry.location.lat,
-                longitude: club.geometry.location.lng,
-              }}
-              onPress={() => {
-                setSelectedClubForPrompt(club);
-                setShowPreviewPrompt(true);
-              }}              
-              pinColor={isVisited(club) ? 'green' : 'red'}
-            />
-          ))}
-        </MapView>
-        
+        {regionReady && region ?(
+          <MapView
+            style={styles.map}
+            region={region}
+            onRegionChangeComplete={(newRegion) => setRegion(newRegion)}
+            showsUserLocation
+          >
+            {nearbyClubs.map((club) => (
+              <Marker
+                key={club.place_id}
+                coordinate={{
+                  latitude: club.geometry.location.lat,
+                  longitude: club.geometry.location.lng,
+                }}
+                onPress={() => {
+                  setSelectedClubForPrompt(club);
+                  setShowPreviewPrompt(true);
+                }}
+                pinColor={isVisited(club) ? 'green' : 'red'}
+              />
+            ))}
+          </MapView>
+        ) : (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text>Loading map...</Text>
+          </View>
+        )}
       </View>
 
       {/* List Section */}

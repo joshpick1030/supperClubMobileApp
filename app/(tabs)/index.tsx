@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   ImageBackground,
   Pressable,
 } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, useFocusEffect, useRouter  } from 'expo-router';
 import HeaderBar from '@/components/HeaderBar';
 import BadgeCard from '../../components/BadgeCard';
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'; // Use Expo Vector Icons
@@ -23,6 +23,24 @@ interface BadgeCardProps {
   progress: string;
   achieved?: boolean;
 }
+
+const midwestStates = [
+  {
+    name: 'Wisconsin',
+    cities: [
+      { name: 'Madison', lat: 43.0731, lng: -89.4012 },
+      { name: 'Milwaukee', lat: 43.0389, lng: -87.9065 },
+    ],
+  },
+  {
+    name: 'Illinois',
+    cities: [
+      { name: 'Chicago', lat: 41.8781, lng: -87.6298 },
+      { name: 'Peoria', lat: 40.6936, lng: -89.5889 },
+    ],
+  },
+  // Add more states
+];
 
 function CustomHeader() {
   return (
@@ -37,12 +55,21 @@ function CustomHeader() {
 }
 
 export default function Home() {
+  
+  const router = useRouter();
 
   const { name, avatar, totalVisits, reviewsWritten, badgesEarned, joinDate, location } = sampleUser;
   const handleFacebookShare = () => {
     // Future: Integrate Share API or deep link
     console.log('Sharing on Facebook...');
   };
+
+  const [discoverVisible, setDiscoverVisible] = useState(false); // show/hide layered map UI
+  const [currentStep, setCurrentStep] = useState<'midwest' | 'state' | 'city' | null>('midwest');
+  const [selectedState, setSelectedState] = useState(null);
+  const [selectedCity, setSelectedCity] = useState(null);
+
+
 
   const nearbyClubs = [
     {
@@ -71,6 +98,15 @@ export default function Home() {
     },
   ];
   
+  useFocusEffect(
+    React.useCallback(() => {
+      // Reset discover UI each time Home is focused
+      setDiscoverVisible(false);
+      setCurrentStep(null);
+      setSelectedState(null);
+      setSelectedCity(null);
+    }, [])
+  );
 
   return (
 
@@ -98,12 +134,19 @@ export default function Home() {
           {/* CTA Buttons */}
           <View style={styles.ctaContainer}>
 
-            <Link href="/map" asChild>
-              <TouchableOpacity style={styles.discoverButton}>
-                <FontAwesome5 name="compass" size={20} color="#000" />
-                <Text style={styles.discoverButtonText}>Discover</Text>
-              </TouchableOpacity>
-            </Link>
+            <TouchableOpacity
+              style={styles.discoverButton}
+              onPress={() => {
+                setDiscoverVisible(true);         // Show the discover flow
+                setCurrentStep('midwest');        // Set step to Midwest view
+                setSelectedState(null);          // Clear previous state/city
+                setSelectedCity(null);
+              }}
+            >
+              <FontAwesome5 name="compass" size={20} color="#000" />
+              <Text style={styles.discoverButtonText}>Discover</Text>
+            </TouchableOpacity>
+
             <Link href="/leaderboard" asChild>
               <TouchableOpacity style={styles.leaderboardButton}>
                 <FontAwesome5 name="trophy" size={15} color="#000" style={styles.icon} />
@@ -207,7 +250,81 @@ export default function Home() {
         
       </ScrollView>
       </ImageBackground>
+
+      {discoverVisible && currentStep === 'midwest' && (
+        <View style={styles.popupContainer}>
+          <Text style={styles.popupTitle}>Select a State</Text>
+          <ScrollView>
+            {midwestStates.map((state) => (
+              <TouchableOpacity
+                key={state.name}
+                onPress={() => {
+                  setSelectedState(state);
+                  setCurrentStep('state');
+                }}
+                style={styles.listItem}
+              >
+                <Text style={styles.listText}>{state.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          <TouchableOpacity onPress={() => setDiscoverVisible(false)} style={styles.closeBtn}>
+            <Text style={{ color: 'white' }}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {discoverVisible && currentStep === 'state' && selectedState && (
+        <View style={styles.popupContainer}>
+          <Text style={styles.popupTitle}>Select a City in {selectedState.name}</Text>
+          <ScrollView>
+            {selectedState.cities.map((city) => (
+              <TouchableOpacity
+                key={city.name}
+                onPress={() => {
+                  setSelectedCity(city);
+                  setCurrentStep('city');
+                }}
+                style={styles.listItem}
+              >
+                <Text style={styles.listText}>{city.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          <TouchableOpacity onPress={() => setCurrentStep('midwest')} style={styles.backBtn}>
+            <Text style={{ color: 'white' }}>Back</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {discoverVisible && currentStep === 'city' && selectedCity && (
+        <View style={styles.popupContainer}>
+          <Text style={styles.popupTitle}>Explore Supper Clubs in {selectedCity.name}</Text>
+          
+          <TouchableOpacity
+            onPress={() => {
+              setDiscoverVisible(false);
+              setCurrentStep(null);
+              setSelectedState(null);
+              setSelectedCity(null);
+
+              // Navigate to map with params
+              router.push(`/map?lat=${selectedCity.lat}&lng=${selectedCity.lng}&city=${selectedCity.name}&state=${selectedState.name}`);
+
+            }}
+            style={styles.confirmBtn}
+          >
+            <Text style={{ color: 'white' }}>View Map</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => setCurrentStep('state')} style={styles.backBtn}>
+            <Text style={{ color: 'white' }}>Back</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
     </View>
+    
     
   );
 }
@@ -610,4 +727,48 @@ const styles = StyleSheet.create({
     marginLeft: 15,
     marginTop: 3,
   },
+  popupContainer: {
+    position: 'absolute',
+    top: 80,
+    left: 20,
+    right: 20,
+    bottom: 80,
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    elevation: 10,
+    zIndex: 999,
+  },
+  popupTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  listItem: {
+    padding: 12,
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 1,
+  },
+  confirmBtn: {
+    marginTop: 20,
+    backgroundColor: '#2563EB',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  backBtn: {
+    marginTop: 10,
+    backgroundColor: '#9CA3AF',
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  closeBtn: {
+    marginTop: 20,
+    backgroundColor: '#B91C1C',
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  }
+  
 });
