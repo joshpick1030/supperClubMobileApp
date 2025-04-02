@@ -8,6 +8,11 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -41,7 +46,8 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-location"
+      "expo-location",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

@@ -13,7 +13,7 @@ import {
 import { Link, useFocusEffect, useRouter  } from 'expo-router';
 import HeaderBar from '@/components/HeaderBar';
 import BadgeCard from '../../components/BadgeCard';
-import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'; // Use Expo Vector Icons
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'; 
 import { sampleUser, sampleBadges, sampleStatuses, sampleLists, sampleReviews } from '../../data/sampleProfileData';
 
 const screenWidth = Dimensions.get('window').width;
