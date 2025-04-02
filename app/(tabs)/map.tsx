@@ -6,7 +6,7 @@ import MapView, { Marker, Callout } from 'react-native-maps';
 import axios from 'axios';
 import * as Location from 'expo-location';
 import { FontAwesome, AntDesign } from '@expo/vector-icons';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyB5iaOi8llySykAv5NUqMjx7u5mU4LU0qs';
 
@@ -125,51 +125,43 @@ export default function MapScreen() {
   const [selectedClubForPrompt, setSelectedClubForPrompt] = useState<any | null>(null);
   const [selectedClubForModal, setSelectedClubForModal] = useState<any | null>(null);  
   const [showPreviewPrompt, setShowPreviewPrompt] = useState(false);
+  const router = useRouter();
   const params = useLocalSearchParams();
 
+  const { lat, lng, useCurrentLocation } = params;
+
   useEffect(() => {
-    (async () => {
-      try {
+    if (useCurrentLocation === 'true') {
+      (async () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
-          setErrorMsg('Permission to access location was denied');
+          setErrorMsg('Permission denied');
           return;
         }
-
         const currentLocation = await Location.getCurrentPositionAsync({});
         setLocation(currentLocation);
-
-        if (currentLocation) {
-          setRegion({
-            latitude: currentLocation.coords.latitude,
-            longitude: currentLocation.coords.longitude,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          });
-          fetchNearbyClubs(currentLocation.coords.latitude, currentLocation.coords.longitude);
-        }
-      } catch (error) {
-        console.error('Error fetching location:', error);
-        setErrorMsg('Unable to fetch location.');
-      }
-    })();
-  }, []);
-
-  const { lat, lng } = params;
-
-  useEffect(() => {
-    if (lat && lng) {
-      const parsedLat = parseFloat(String(lat));
-      const parsedLng = parseFloat(String(lng));
-      setRegion({
+        const newRegion = {
+          latitude: currentLocation.coords.latitude,
+          longitude: currentLocation.coords.longitude,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        };
+        setRegion(newRegion);
+        fetchNearbyClubs(newRegion.latitude, newRegion.longitude);
+      })();
+    } else if (lat && lng) {
+      const parsedLat = parseFloat(lat);
+      const parsedLng = parseFloat(lng);
+      const newRegion = {
         latitude: parsedLat,
         longitude: parsedLng,
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
-      });
+      };
+      setRegion(newRegion);
       fetchNearbyClubs(parsedLat, parsedLng);
     }
-  }, [lat, lng]); // Only rerun if actual lat/lng change  
+  }, [useCurrentLocation, lat, lng]);
 
   const getClubReviews = (club: any) => {
     const visitedMatch = visitedPlaces.find((v) => v.place_id === club.place_id);
@@ -300,8 +292,45 @@ export default function MapScreen() {
               pinColor={isVisited(club) ? 'green' : 'red'}
             />
           ))}
+
         </MapView>
         
+        <TouchableOpacity
+            style={styles.currentLocationButton}
+            onPress={() => {
+              router.push('/map?useCurrentLocation=true');
+            }}
+          >
+            <FontAwesome name="location-arrow" size={24} color="black" />
+          </TouchableOpacity>
+        {/* Zoom Controls (Correct Placement) */}
+        <View style={styles.zoomControls}>
+          <TouchableOpacity
+            onPress={() =>
+              setRegion((prev) => ({
+                ...prev,
+                latitudeDelta: prev.latitudeDelta / 2,
+                longitudeDelta: prev.longitudeDelta / 2,
+              }))
+            }
+            style={styles.zoomButton}
+          >
+            <FontAwesome name="plus" size={20} color="#000" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() =>
+              setRegion((prev) => ({
+                ...prev,
+                latitudeDelta: prev.latitudeDelta * 2,
+                longitudeDelta: prev.longitudeDelta * 2,
+              }))
+            }
+            style={styles.zoomButton}
+          >
+            <FontAwesome name="minus" size={20} color="#000" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* List Section */}
@@ -601,7 +630,7 @@ const styles = StyleSheet.create({
   },
   promptCard: {
     position: 'absolute',
-    bottom: 300,
+    top: 150,
     width: '60%',
     alignSelf: 'center',
     backgroundColor: 'white',
@@ -613,7 +642,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
   },
-  promptTitle: {
+  promptTitle: {  
     fontWeight: 'bold',
     fontSize: 16,
     marginBottom: 5,
@@ -650,5 +679,28 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dims everything behind
   },
-  
+  currentLocationButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#fff',
+    padding: 8,
+    borderRadius: 8,
+    elevation: 3,
+    zIndex: 100,
+  },
+  zoomControls: {
+    position: 'absolute',
+    bottom: 20,
+    right: 10,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    elevation: 3,
+    zIndex: 100,
+  },
+  zoomButton: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+  },
 });

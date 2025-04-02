@@ -685,6 +685,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.7)', // Semi-transparent white
     paddingHorizontal: 12,
+    marginLeft: 10,
     paddingVertical: 4,
     borderRadius: 8,
     margin: 16,
@@ -692,13 +693,14 @@ const styles = StyleSheet.create({
     color: '#1F2937', // Navy-like color
     textAlign: 'center',
     backdropFilter: 'blur(10px)', // Optional blur effect
-    flexDirection: 'row',
+    // flexDirection: 'row',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 10,
+    // marginBottom: 10,
+    // paddingLeft: 5,
   },
   subtitle: {
     fontSize: 16,
