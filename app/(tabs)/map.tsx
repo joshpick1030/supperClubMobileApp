@@ -38,44 +38,63 @@ const getPriceRange = (priceLevel: number) => {
 const visitedPlaces = [
   {
     id: '1',
-    name: 'Joe’s Supper Club',
-    latitude: 40.73061,
-    longitude: -73.935242,
-    city: 'New York',
-    state: 'NY',
-    rating: 4.5,
-    price: '$50-100',
-    address: '123 Main St, New York, NY',
+    name: "L'Artusi Supper Club",
+    place_id: "ChIJ69wzjklZwokRv1YuMukRVOA",
+    latitude: 40.7334886,
+    longitude: -74.0050292,
+    city: "New York",
+    state: "NY",
+    rating: 4.7,
+    price: "$30-60",
+    address: "105 Christopher St, New York",
     images: [
-      'https://via.placeholder.com/300x200',
       'https://via.placeholder.com/300x200',
     ],
     reviews: [
-      { id: '1', text: 'Amazing food and great atmosphere!', rating: 5 },
-      { id: '2', text: 'Highly recommend the steak!', rating: 4.5 },
+      { id: '1', text: "Excellent food and wine selection!", rating: 5 },
     ],
     visited: true,
   },
   {
     id: '2',
-    name: 'The Manhattan Supper Club',
-    latitude: 40.712776,
-    longitude: -74.005974,
-    city: 'New York',
-    state: 'NY',
-    rating: 4.8,
-    price: '$100-150',
-    address: '456 Broadway, New York, NY',
+    name: "Bangkok Supper Club",
+    place_id: "ChIJvduhDjVZwokReg77D1pNQaQ",
+    latitude: 40.739047,
+    longitude: -74.0057385,
+    city: "New York",
+    state: "NY",
+    rating: 4.5,
+    price: "$10-30",
+    address: "641 Hudson St, New York",
     images: [
-      'https://via.placeholder.com/300x200',
       'https://via.placeholder.com/300x200',
     ],
     reviews: [
-      { id: '1', text: 'Upscale dining experience with great seafood!', rating: 5 },
+      { id: '1', text: "Authentic Thai flavors in a cozy setting.", rating: 4 },
     ],
     visited: true,
   },
+  {
+    id: '3',
+    name: "St. Mazie Bar & Supper Club",
+    place_id: "ChIJSy8Bbl9ZwokR8QnOQHNn4hk",
+    latitude: 40.7126002,
+    longitude: -73.9558512,
+    city: "Brooklyn",
+    state: "NY",
+    rating: 4.5,
+    price: "$10-30",
+    address: "345 Grand St, Brooklyn",
+    images: [
+      'https://via.placeholder.com/300x200',
+    ],
+    reviews: [
+      { id: '1', text: "Live music and delicious cocktails!", rating: 5 },
+    ],
+    visited: true,
+  }
 ];
+
 
 export default function MapScreen() {
   const [location, setLocation] = useState(null);
@@ -115,6 +134,25 @@ export default function MapScreen() {
     })();
   }, []);
 
+  const getClubReviews = (club: any) => {
+    const visitedMatch = visitedPlaces.find((v) => v.place_id === club.place_id);
+    if (visitedMatch?.reviews?.length) return visitedMatch.reviews;
+  
+    // Mock reviews for non-visited places
+    return [
+      {
+        id: '1',
+        text: 'Great ambiance and tasty dishes!',
+        rating: 4,
+      },
+      {
+        id: '2',
+        text: 'Service was decent, would return.',
+        rating: 3.5,
+      },
+    ];
+  };  
+
   const fetchNearbyClubs = async (latitude: number, longitude: number) => {
     try {
       const response = await axios.get(
@@ -136,6 +174,12 @@ export default function MapScreen() {
   };
 
   const isVisited = (place: any) => {
+    // Prefer to match by place_id if available
+    if (place.place_id) {
+      return visitedPlaces.some((visited) => visited.place_id === place.place_id);
+    }
+  
+    // Fallback to matching name and approximate location
     return visitedPlaces.some(
       (visited) =>
         visited.name === place.name &&
@@ -180,6 +224,10 @@ export default function MapScreen() {
     );
   }
 
+  const filteredClubs = nearbyClubs.filter((club) =>
+    club.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );  
+
   return (
     <View style={styles.container}>
       {/* Search Bar */}
@@ -221,12 +269,12 @@ export default function MapScreen() {
 
       {/* List Section */}
       <View style={styles.listContainer}>
-        <FlatList
-          data={nearbyClubs}
-          keyExtractor={(item) => item.place_id}
-          renderItem={renderClubItem}
-          contentContainerStyle={styles.listContent}
-        />
+      <FlatList
+        data={filteredClubs}
+        keyExtractor={(item) => item.place_id}
+        renderItem={renderClubItem}
+        contentContainerStyle={styles.listContent}
+      />
       </View>
 
       {/* Club Details Modal */}
@@ -312,9 +360,10 @@ export default function MapScreen() {
               </MapView>
         
               {/* Reviews */}
+              {/* Reviews */}
               <Text style={styles.modalSectionTitle}>Reviews</Text>
-              {selectedClubForModal .reviews?.length ? (
-                selectedClubForModal .reviews.map((review: any) => (
+              {getClubReviews(selectedClubForModal)?.length > 0 ? (
+                getClubReviews(selectedClubForModal).map((review: any) => (
                   <View key={review.id} style={styles.reviewCard}>
                     <Text style={styles.reviewText}>{review.text}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
