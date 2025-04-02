@@ -681,8 +681,8 @@ const styles = StyleSheet.create({
   },
   currentLocationButton: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+    top: 60,
+    right: 14,
     backgroundColor: '#fff',
     padding: 8,
     borderRadius: 8,
@@ -699,7 +699,7 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   zoomButton: {
-    padding: 10,
+    padding: 14,
     borderBottomWidth: 1,
     borderColor: '#ccc',
   },
