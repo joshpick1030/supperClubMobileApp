@@ -1,6 +1,6 @@
 // app/map.tsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState ,useRef} from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Modal, Image, ScrollView } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import axios from 'axios';
@@ -14,8 +14,8 @@ const GOOGLE_MAPS_API_KEY = 'AIzaSyB5iaOi8llySykAv5NUqMjx7u5mU4LU0qs';
 const defaultRegion = {
   latitude: 40.7128, // New York City latitude
   longitude: -74.0060, // New York City longitude
-  latitudeDelta: 0.1,
-  longitudeDelta: 0.1,
+  latitudeDelta: 1,
+  longitudeDelta: 1,
 };
 
 const getPriceRange = (priceLevel: number) => {
@@ -143,8 +143,8 @@ export default function MapScreen() {
         const newRegion = {
           latitude: currentLocation.coords.latitude,
           longitude: currentLocation.coords.longitude,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
+          latitudeDelta: 1,
+          longitudeDelta: 1,
         };
         setRegion(newRegion);
         fetchNearbyClubs(newRegion.latitude, newRegion.longitude);
@@ -155,8 +155,8 @@ export default function MapScreen() {
       const newRegion = {
         latitude: parsedLat,
         longitude: parsedLng,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
+        latitudeDelta: 1,
+        longitudeDelta: 1,
       };
       setRegion(newRegion);
       fetchNearbyClubs(parsedLat, parsedLng);
@@ -189,7 +189,7 @@ export default function MapScreen() {
         {
           params: {
             location: `${latitude},${longitude}`,
-            radius: 5000,
+            radius: 50000,
             type: 'restaurant',
             keyword: 'supper club',
             key: GOOGLE_MAPS_API_KEY,
@@ -257,6 +257,21 @@ export default function MapScreen() {
     club.name.toLowerCase().includes(searchQuery.toLowerCase())
   );  
 
+  const mapRef = useRef<MapView>(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
+
+  const handleZoomIn = () => {
+    const newZoom = Math.min(zoomLevel + 1, 20);
+    setZoomLevel(newZoom);
+    mapRef.current?.animateCamera({ zoom: newZoom }, { duration: 300 });
+  };
+
+  const handleZoomOut = () => {
+    const newZoom = Math.max(zoomLevel - 1, 2);
+    setZoomLevel(newZoom);
+    mapRef.current?.animateCamera({ zoom: newZoom }, { duration: 300 });
+  };
+
   return (
     <View style={styles.container}>
       {/* Search Bar */}
@@ -274,7 +289,7 @@ export default function MapScreen() {
         <MapView
           style={styles.map}
           region={region}
-          onRegionChangeComplete={(newRegion) => setRegion(newRegion)}
+          initialRegion={region}
           showsUserLocation
         >
           {/* Mark nearby clubs */}
@@ -408,11 +423,12 @@ export default function MapScreen() {
               {/* Club Location Mini Map */}
               <MapView
                 style={styles.detailMap}
+                ref = {mapRef}
                 initialRegion={{
                   latitude: selectedClubForModal .geometry?.location.lat || selectedClubForModal .latitude,
                   longitude: selectedClubForModal .geometry?.location.lng || selectedClubForModal .longitude,
-                  latitudeDelta: 0.01,
-                  longitudeDelta: 0.01,
+                  latitudeDelta: 1,
+                  longitudeDelta: 1,
                 }}
                 scrollEnabled={false}
                 zoomEnabled={false}
@@ -704,3 +720,4 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
   },
 });
+

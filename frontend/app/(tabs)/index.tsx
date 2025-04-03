@@ -14,6 +14,7 @@ import { Link, useFocusEffect, useRouter  } from 'expo-router';
 import HeaderBar from '@/components/HeaderBar';
 import BadgeCard from '../../components/BadgeCard';
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'; 
+import MidwestMapSvg from '../../components/MidwestMapSvg';
 import { sampleUser, sampleBadges, sampleStatuses, sampleLists, sampleReviews } from '../../data/sampleProfileData';
 
 const screenWidth = Dimensions.get('window').width;
@@ -23,24 +24,106 @@ interface BadgeCardProps {
   progress: string;
   achieved?: boolean;
 }
-
 const midwestStates = [
+  {
+    name: 'Illinois',
+    cities: [
+      { name: 'Chicago', lat: 41.8781, lng: -87.6298 },
+      { name: 'Peoria', lat: 40.6936, lng: -89.5889 },
+      { name: 'Springfield', lat: 39.7817, lng: -89.6501 },
+    ],
+    center: { lat: 40.0, lng: -89.0 },
+  },
+  {
+    name: 'Indiana',
+    cities: [
+      { name: 'Indianapolis', lat: 39.7684, lng: -86.1581 },
+      { name: 'Fort Wayne', lat: 41.0793, lng: -85.1394 },
+    ],
+    center: { lat: 39.9, lng: -86.3 },
+  },
+  {
+    name: 'Iowa',
+    cities: [
+      { name: 'Des Moines', lat: 41.5868, lng: -93.6250 },
+      { name: 'Cedar Rapids', lat: 41.9779, lng: -91.6656 },
+    ],
+    center: { lat: 42.0, lng: -93.0 },
+  },
+  {
+    name: 'Kansas',
+    cities: [
+      { name: 'Wichita', lat: 37.6872, lng: -97.3301 },
+      { name: 'Topeka', lat: 39.0558, lng: -95.6890 },
+    ],
+    center: { lat: 38.5, lng: -98.0 },
+  },
+  {
+    name: 'Michigan',
+    cities: [
+      { name: 'Detroit', lat: 42.3314, lng: -83.0458 },
+      { name: 'Grand Rapids', lat: 42.9634, lng: -85.6681 },
+    ],
+    center: { lat: 44.0, lng: -84.5 },
+  },
+  {
+    name: 'Minnesota',
+    cities: [
+      { name: 'Minneapolis', lat: 44.9778, lng: -93.2650 },
+      { name: 'St. Paul', lat: 44.9537, lng: -93.0900 },
+    ],
+    center: { lat: 46.0, lng: -94.0 },
+  },
+  {
+    name: 'Missouri',
+    cities: [
+      { name: 'Kansas City', lat: 39.0997, lng: -94.5786 },
+      { name: 'St. Louis', lat: 38.6270, lng: -90.1994 },
+    ],
+    center: { lat: 38.5, lng: -92.5 },
+  },
+  {
+    name: 'Nebraska',
+    cities: [
+      { name: 'Omaha', lat: 41.2565, lng: -95.9345 },
+      { name: 'Lincoln', lat: 40.8136, lng: -96.7026 },
+    ],
+    center: { lat: 41.5, lng: -99.5 },
+  },
+  {
+    name: 'North Dakota',
+    cities: [
+      { name: 'Fargo', lat: 46.8772, lng: -96.7898 },
+      { name: 'Bismarck', lat: 46.8083, lng: -100.7837 },
+    ],
+    center: { lat: 47.5, lng: -100.5 },
+  },
+  {
+    name: 'Ohio',
+    cities: [
+      { name: 'Columbus', lat: 39.9612, lng: -82.9988 },
+      { name: 'Cleveland', lat: 41.4993, lng: -81.6944 },
+    ],
+    center: { lat: 40.5, lng: -82.5 },
+  },
+  {
+    name: 'South Dakota',
+    cities: [
+      { name: 'Sioux Falls', lat: 43.5446, lng: -96.7311 },
+      { name: 'Rapid City', lat: 44.0805, lng: -103.2310 },
+    ],
+    center: { lat: 44.5, lng: -100.0 },
+  },
   {
     name: 'Wisconsin',
     cities: [
       { name: 'Madison', lat: 43.0731, lng: -89.4012 },
       { name: 'Milwaukee', lat: 43.0389, lng: -87.9065 },
     ],
+    center: { lat: 44.5, lng: -89.5 },
   },
-  {
-    name: 'Illinois',
-    cities: [
-      { name: 'Chicago', lat: 41.8781, lng: -87.6298 },
-      { name: 'Peoria', lat: 40.6936, lng: -89.5889 },
-    ],
-  },
-  // Add more states
 ];
+
 
 function CustomHeader() {
   return (
@@ -253,6 +336,16 @@ export default function Home() {
 
       {discoverVisible && currentStep === 'midwest' && (
         <View style={styles.popupContainer}>
+          <View style={styles.clickablecard}>
+            <MidwestMapSvg
+              onStatePress={(stateName) => {
+                const state = midwestStates.find(s => s.name === stateName);
+                if (state) {
+                  router.push(`/map?lat=${state.center.lat}&lng=${state.center.lng}&state=${state.name}`);
+                }
+              }}
+            />
+          </View>
           <Text style={styles.popupTitle}>Select a State</Text>
           <ScrollView>
             {midwestStates.map((state) => (
@@ -714,6 +807,17 @@ const styles = StyleSheet.create({
     elevation: 2,
     marginLeft: 20,
     marginRight: 20,
+  },
+  clickablecard: {
+    backgroundColor: '#FFFFFF', // White card background
+    borderRadius: 10,
+    padding: 0,
+    marginBottom: 16,
+    elevation: 2,
+    justifyContent  : 'center',
+    alignItems: 'center',
+    // marginLeft: 20,
+    // marginRight: 20,
   },
   statCard: {
     flex: 1,
