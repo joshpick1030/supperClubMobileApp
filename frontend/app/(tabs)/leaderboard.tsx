@@ -86,26 +86,21 @@ export default function LeaderboardScreen() {
           ))}
         </View>
 
-        {/* Bar Chart */}
-        <BarChart
-          data={chartData}
-          width={screenWidth - 32} // Adjust width as needed
-          height={220}
-          yAxisLabel="$"
-          yAxisSuffix="" // Add this property to fix the error
-          chartConfig={{
-            backgroundColor: '#e26a00',
-            backgroundGradientFrom: '#fb8c00',
-            backgroundGradientTo: '#ffa726',
-            decimalPlaces: 2,
-            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-          }}
-          style={{
-            marginVertical: 8,
-            borderRadius: 16,
-          }}
-        />
+        {/* Top 3 Leaderboard */}
+        <View style={styles.topThreeContainer}>
+          {data.slice(0, 3).map((user, index) => {
+            const maxVisits = data[0].visits; // assume sorted
+            const height = (user.visits / maxVisits) * 150; // scale bar height
+
+            return (
+              <View key={index} style={styles.topThreeItem}>
+                <Text style={styles.clubCount}>{user.visits} Clubs</Text>
+                <Image source={{ uri: user.avatar }} style={styles.avatar} />
+                <View style={[styles.bar, { height }]} />
+              </View>
+            );
+          })}
+        </View>
 
         {/* Leaderboard List */}
         <Text style={styles.listTitle}>{selectedTab.charAt(0).toUpperCase() + selectedTab.slice(1)} Leaderboard</Text>
@@ -222,4 +217,45 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#1F2937',
   },
+  topThreeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'flex-end',
+    marginVertical: 20,
+    height: 200,
+    backgroundColor: '#FAF9F6',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+  },
+  
+  topThreeItem: {
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    flex: 1,
+  },
+  
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginBottom: 6,
+    borderWidth: 2,
+    borderColor: '#fff',
+    zIndex: 2,
+  },
+  
+  bar: {
+    width: 40,
+    backgroundColor: '#9B1C1C',
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+  },
+  
+  clubCount: {
+    fontWeight: 'bold',
+    fontSize: 14,
+    marginBottom: 4,
+    color: '#1F2937',
+  },
+  
 });

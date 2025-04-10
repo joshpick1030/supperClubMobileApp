@@ -184,7 +184,7 @@ export default function MapScreen() {
 
   const fetchNearbyClubs = async (latitude: number, longitude: number) => {
     try {
-      const response = await axios.get(
+      const nearbyResponse = await axios.get(
         `https://maps.googleapis.com/maps/api/place/nearbysearch/json`,
         {
           params: {
@@ -196,11 +196,40 @@ export default function MapScreen() {
           },
         }
       );
-      setNearbyClubs(response.data.results);
+  
+      const basicResults = nearbyResponse.data.results;
+  
+      // Fetch details for each result
+      const detailedResults = await Promise.all(
+        basicResults.map(async (place) => {
+          try {
+            const detailsRes = await axios.get(
+              `https://maps.googleapis.com/maps/api/place/details/json`,
+              {
+                params: {
+                  place_id: place.place_id,
+                  fields: 'name,rating,vicinity,formatted_phone_number,opening_hours,photos,reviews,geometry',
+                  key: GOOGLE_MAPS_API_KEY,
+                },
+              }
+            );
+            return {
+              ...place,
+              ...detailsRes.data.result,
+            };
+          } catch (err) {
+            console.error(`Error fetching details for ${place.name}:`, err);
+            return place;
+          }
+        })
+      );
+  
+      setNearbyClubs(detailedResults);
     } catch (error) {
       console.error('Error fetching nearby clubs:', error);
     }
   };
+  
 
   const isVisited = (place: any) => {
     // Prefer to match by place_id if available
@@ -316,7 +345,7 @@ export default function MapScreen() {
               router.push('/map?useCurrentLocation=true');
             }}
           >
-            <FontAwesome name="location-arrow" size={24} color="black" />
+            <FontAwesome name="location-arrow" size={24} color="black"  />
           </TouchableOpacity>
         {/* Zoom Controls (Correct Placement) */}
         <View style={styles.zoomControls}>
@@ -481,35 +510,84 @@ export default function MapScreen() {
 
           {/* Prompt Card */}
           <View style={styles.promptCard}>
-            <Text style={styles.promptTitle}>{selectedClubForPrompt.name}</Text>
-
+            {/* Image Preview */}
             {selectedClubForPrompt.photos?.[0] && (
               <Image
                 source={{
-                  uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=100&photoreference=${selectedClubForPrompt.photos[0].photo_reference}&key=${GOOGLE_MAPS_API_KEY}`,
+                  uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=300&photoreference=${selectedClubForPrompt.photos[0].photo_reference}&key=${GOOGLE_MAPS_API_KEY}`,
                 }}
                 style={styles.promptImage}
               />
             )}
 
-            <Text style={{ color: selectedClubForPrompt.opening_hours?.open_now ? 'green' : 'red' }}>
-              {selectedClubForPrompt.opening_hours?.open_now ? 'Open Now' : 'Closed'}
-            </Text>
+            {/* Name */}
+            <Text style={styles.promptTitle}>{selectedClubForPrompt.name}</Text>
 
-            <Text style={{ color: isVisited(selectedClubForPrompt) ? 'green' : 'gray' }}>
-              {isVisited(selectedClubForPrompt) ? 'Visited' : 'Not Visited'}
-            </Text>
+            {/* Address */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <FontAwesome name="map-marker" size={14} color="#EA580C" style={{ marginRight: 6 }} />
+              <Text style={{ fontSize: 13, color: '#6B7280' }}>
+                {selectedClubForPrompt.vicinity || selectedClubForPrompt.address || 'Address not available'}
+              </Text>
+            </View>
 
-            <TouchableOpacity
-              onPress={() => {
-                setShowPreviewPrompt(false);
-                setSelectedClubForModal(selectedClubForPrompt);
-              }}
-              style={styles.viewDetailsButton}
-            >
-              <Text style={{ color: 'white' }}>View Details</Text>
-            </TouchableOpacity>
-          </View>
+            {/* Rating */}
+            <View style={styles.promptRow}>
+              <FontAwesome name="star" size={14} color="#FACC15" />
+              <Text style={styles.promptSubText}>
+                {selectedClubForPrompt.rating || 'N/A'} / 5
+              </Text>
+            </View>
+
+            {/* Opening Hours */}
+
+            {selectedClubForPrompt?.opening_hours?.weekday_text?.length > 0 && (
+              <View style={{ marginVertical: 8 }}>
+                <FontAwesome name="clock-o" size={14} color="#10B981" />
+                {selectedClubForPrompt.opening_hours.weekday_text.map((line: string, idx: number) => (
+                  <Text
+                    key={idx}
+                    style={{
+                      fontSize: 12,
+                      color: '#374151', // neutral-700
+                      lineHeight: 18,
+                    }}
+                  >
+                    {line}
+                  </Text>
+                ))}
+              </View>
+            )}
+
+
+            {/* Phone number */}
+            <View style={styles.promptRow}>
+              <FontAwesome name="phone" size={14} color="#3B82F6" />
+              <Text style={styles.promptSubText}>
+                {selectedClubForPrompt.formatted_phone_number || '(Contact unavailable)'}
+              </Text>
+            </View>
+
+            {/* Visited */}
+            <View style={styles.promptRow}>
+              <FontAwesome name="check-circle" size={14} color={isVisited(selectedClubForPrompt) ? 'green' : 'gray'} />
+              <Text style={styles.promptSubText}>
+                {isVisited(selectedClubForPrompt) ? 'Visited' : 'Not Visited'}
+              </Text>
+            </View>
+
+            {/* View Details */}
+              <TouchableOpacity
+                onPress={() => {
+                  setShowPreviewPrompt(false);
+                  setSelectedClubForModal(selectedClubForPrompt);
+                }}
+                style={styles.viewDetailsButton}
+              >
+                <Text style={{ color: 'white', fontWeight: '600' }}>View Details</Text>
+              </TouchableOpacity>
+            </View>
+
         </View>
       )}
 
@@ -536,6 +614,7 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     flex: 1,
+    zIndex: 1,
   },
   map: {
     flex: 1,
@@ -646,28 +725,31 @@ const styles = StyleSheet.create({
   },
   promptCard: {
     position: 'absolute',
-    top: 150,
-    width: '60%',
+    top: 100,
+    width: '85%',
     alignSelf: 'center',
     backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 15,
-    elevation: 5,
+    borderRadius: 12,
+    padding: 16,
+    elevation: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowRadius: 4,
+    zIndex: 20,
   },
+  
+  promptImage: {
+    width: '100%',
+    height: 180,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  
   promptTitle: {  
     fontWeight: 'bold',
     fontSize: 16,
     marginBottom: 5,
-  },
-  promptImage: {
-    width: '100%',
-    height: 320,
-    borderRadius: 6,
-    marginBottom: 10,
   },
   viewDetailsButton: {
     marginTop: 10,
@@ -719,5 +801,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#ccc',
   },
+  promptRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+  
+  promptSubText: {
+    marginLeft: 8,
+    fontSize: 13,
+    color: '#6B7280',
+    flexShrink: 1,
+  },
+  
 });
 
